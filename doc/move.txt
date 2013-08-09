@@ -23,6 +23,9 @@ To enable custom key maps you must disable the automatic key maps with >
 
     let g:move_map_keys = 0
 
+All mappings can be prefixed with a {count} and will move {count} steps
+instead of one.
+
 -------------------------------------------------------------------------------
 2.1 <Plug>MoveBlockDown
 

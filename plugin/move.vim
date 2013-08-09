@@ -24,6 +24,10 @@ endfunction
 function! s:MoveBlockDown() range
     let next_line = a:lastline + 1
 
+    if v:count > 0
+        let next_line = next_line + v:count - 1
+    endif
+
     if next_line > line('$')
         call s:ResetCursor()
         return
@@ -35,6 +39,10 @@ endfunction
 
 function! s:MoveBlockUp() range
     let prev_line = a:firstline - 2
+
+    if v:count > 0
+        let prev_line = prev_line - v:count + 1
+    endif
 
     if prev_line < 0
         call s:ResetCursor()

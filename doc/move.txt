@@ -1,0 +1,61 @@
+*move.txt* Moving lines and selections up and even down
+
+Author: Matthias Vogelgesang <github.com/matze>
+License: Same terms as Vim itself (see |move-license|)
+
+===============================================================================
+Contents                                                        *move-contents*
+
+    1. Usage..................................|move-usage|
+    2. Mappings...............................|move-mappings|
+    3. License................................|move-license|
+
+===============================================================================
+1. Usage                                                           *move-usage*
+
+The move plugin is used to move lines and visual selections up and down by
+wrapping the :move command. 
+
+===============================================================================
+2. Mappings                                                     *move-mappings*
+
+To enable custom key maps you must disable the automatic key maps with >
+
+    let g:move_map_keys = 0
+
+-------------------------------------------------------------------------------
+2.1 <Plug>MoveBlockDown
+
+Move selected block down by one line.
+
+Default: vmap <C-j> <Plug>MoveBlockDown
+
+-------------------------------------------------------------------------------
+2.2 <Plug>MoveBlockUp
+
+Move selected block up by one line.
+
+Default: vmap <C-k> <Plug>MoveBlockUp
+
+-------------------------------------------------------------------------------
+2.3 <Plug>MoveLineDown
+
+Move current down by one line.
+
+Default: nmap <A-j> <Plug>MoveLineDown
+
+-------------------------------------------------------------------------------
+2.4 <Plug>MoveLineUp
+
+Move current up by one line.
+
+Default: nmap <A-k> <Plug>MoveLineUp
+
+
+===============================================================================
+3. License                                                       *move-license*
+
+This plugin is copyright by Matthias Vogelgesang and licensed under the MIT
+license.
+
+vim:ft=help:

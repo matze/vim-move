@@ -18,6 +18,8 @@ endif
 
 function! s:ResetCursor()
     normal! gv
+    normal! =
+    normal! gv
     normal! ^
 endfunction
 
@@ -62,10 +64,12 @@ function! s:MoveLineUp() range
 
     if (line('.') - distance) < 0
         execute 'm 0'
+        normal! ==
         return
     endif
 
     execute 'm-' . distance
+    normal! ==
 endfunction
 
 function! s:MoveLineDown() range
@@ -79,10 +83,12 @@ function! s:MoveLineDown() range
 
     if (line('.') + distance) > line('$')
         execute 'm $'
+        normal! ==
         return
     endif
 
     execute 'm+' . distance
+    normal! ==
 endfunction
 
 vnoremap <silent> <Plug>MoveBlockDown :call <SID>MoveBlockDown()<CR>

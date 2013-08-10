@@ -100,5 +100,5 @@ if g:move_map_keys
     vmap <C-j> <Plug>MoveBlockDown
     vmap <C-k> <Plug>MoveBlockUp
     nmap <A-j> <Plug>MoveLineDown
-    nmap <A-k> <Plug>MoveLineDown
+    nmap <A-k> <Plug>MoveLineUp
 endif

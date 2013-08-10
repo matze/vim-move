@@ -53,18 +53,36 @@ function! s:MoveBlockUp() range
     call s:ResetCursor()
 endfunction
 
-function! s:MoveLineUp()
-    if line('.') == line('0')
+function! s:MoveLineUp() range
+    let distance = 2
+
+    if v:count > 0
+        let distance = distance + v:count - 1
+    endif
+
+    if (line('.') - distance) < 0
+        execute 'm 0'
         return
     endif
-    execute 'm-2'
+
+    execute 'm-' . distance
 endfunction
 
-function! s:MoveLineDown()
-    if line('.') == line('0')
+function! s:MoveLineDown() range
+    let distance = 1
+
+    if v:count > 0
+        let distance = distance + v:count - 1
+    endif
+
+    echom distance
+
+    if (line('.') + distance) > line('$')
+        execute 'm $'
         return
     endif
-    execute 'm+1'
+
+    execute 'm+' . distance
 endfunction
 
 vnoremap <silent> <Plug>MoveBlockDown :call <SID>MoveBlockDown()<CR>

@@ -79,8 +79,6 @@ function! s:MoveLineDown() range
         let distance = distance + v:count - 1
     endif
 
-    echom distance
-
     if (line('.') + distance) > line('$')
         execute 'm $'
         normal! ==

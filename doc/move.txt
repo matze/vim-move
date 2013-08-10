@@ -62,7 +62,7 @@ This plugin is copyright by Matthias Vogelgesang and licensed under the MIT
 license.
 
 ===============================================================================
-3. Changelog                                                     *move-license*
+3. Changelog                                                   *move-changelog*
 
 v1.0
     * Released on 08/10/13

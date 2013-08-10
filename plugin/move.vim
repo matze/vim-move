@@ -2,7 +2,7 @@
 " File: plugin/move.vim
 " Description: Move lines and selections up and even down.
 " Author: Matthias Vogelgesang <github.com/matze>
-" Version: 0.1
+" Version: 1.0
 " =============================================================================
 
 

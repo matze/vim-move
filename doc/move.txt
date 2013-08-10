@@ -9,12 +9,13 @@ Contents                                                        *move-contents*
     1. Usage..................................|move-usage|
     2. Mappings...............................|move-mappings|
     3. License................................|move-license|
+    4. Changelog..............................|move-changelog|
 
 ===============================================================================
 1. Usage                                                           *move-usage*
 
 The move plugin is used to move lines and visual selections up and down by
-wrapping the :move command. 
+wrapping the :move command.
 
 ===============================================================================
 2. Mappings                                                     *move-mappings*
@@ -54,11 +55,16 @@ Move current up by one line.
 
 Default: nmap <A-k> <Plug>MoveLineUp
 
-
 ===============================================================================
 3. License                                                       *move-license*
 
 This plugin is copyright by Matthias Vogelgesang and licensed under the MIT
 license.
+
+===============================================================================
+3. Changelog                                                     *move-license*
+
+v1.0
+    * Released on 08/10/13
 
 vim:ft=help:

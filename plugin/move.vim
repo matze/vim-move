@@ -22,8 +22,8 @@ function! s:ResetCursor()
     normal! ^
 endfunction
 
-function! s:MoveBlockDown() range
-    let next_line = a:lastline + 1
+function! s:MoveBlockDown(start, end, count)
+    let next_line = a:start + a:count
 
     if v:count > 0
         let next_line = next_line + v:count - 1
@@ -34,12 +34,12 @@ function! s:MoveBlockDown() range
         return
     endif
 
-    execute a:firstline "," a:lastline "m " next_line
+    execute a:start "," a:end "m " next_line
     call s:ResetCursor()
 endfunction
 
-function! s:MoveBlockUp() range
-    let prev_line = a:firstline - 2
+function! s:MoveBlockUp(start, end, count)
+    let prev_line = a:start - a:count - 1
 
     if v:count > 0
         let prev_line = prev_line - v:count + 1
@@ -50,12 +50,12 @@ function! s:MoveBlockUp() range
         return
     endif
 
-    execute a:firstline "," a:lastline "m " prev_line
+    execute a:start "," a:end "m " prev_line
     call s:ResetCursor()
 endfunction
 
-function! s:MoveLineUp() range
-    let distance = 2
+function! s:MoveLineUp(count) range
+    let distance = a:count + 1
 
     if v:count > 0
         let distance = distance + v:count - 1
@@ -71,8 +71,8 @@ function! s:MoveLineUp() range
     normal! ==
 endfunction
 
-function! s:MoveLineDown() range
-    let distance = 1
+function! s:MoveLineDown(count) range
+    let distance = a:count
 
     if v:count > 0
         let distance = distance + v:count - 1
@@ -88,10 +88,45 @@ function! s:MoveLineDown() range
     normal! ==
 endfunction
 
-vnoremap <silent> <Plug>MoveBlockDown :call <SID>MoveBlockDown()<CR>
-vnoremap <silent> <Plug>MoveBlockUp   :call <SID>MoveBlockUp()<CR>
-nnoremap <silent> <Plug>MoveLineDown  :call <SID>MoveLineDown()<CR>
-nnoremap <silent> <Plug>MoveLineUp    :call <SID>MoveLineUp()<CR>
+function! s:MoveBlockOneLineUp() range
+    call s:MoveBlockUp(a:firstline, a:lastline, 1)
+endfunction
+
+function! s:MoveBlockOneLineDown() range
+    call s:MoveBlockDown(a:firstline, a:lastline, 1)
+endfunction
+
+function! s:MoveBlockHalfPageUp() range
+    let distance = winheight('.') / 2
+    call s:MoveBlockUp(a:firstline, a:lastline, distance)
+endfunction
+
+function! s:MoveBlockHalfPageDown() range
+    let distance = winheight('.') / 2
+    call s:MoveBlockDown(a:firstline, a:lastline, distance)
+endfunction
+
+function! s:MoveLineHalfPageUp() range
+    let distance = winheight('.') / 2
+    call s:MoveLineUp(distance)
+endfunction
+
+function! s:MoveLineHalfPageDown() range
+    let distance = winheight('.') / 2
+    call s:MoveLineDown(distance)
+endfunction
+
+
+vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineDown()<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineUp()<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageDown()<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageUp()<CR>
+
+nnoremap <silent> <Plug>MoveLineDown            :call <SID>MoveLineDown(1)<CR>
+nnoremap <silent> <Plug>MoveLineUp              :call <SID>MoveLineUp(1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageDown    :call <SID>MoveLineHalfPageDown()<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageUp      :call <SID>MoveLineHalfPageUp()<CR>
+
 
 if g:move_map_keys
     vmap <C-j> <Plug>MoveBlockDown

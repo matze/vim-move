@@ -44,16 +44,44 @@ Default: vmap <C-k> <Plug>MoveBlockUp
 -------------------------------------------------------------------------------
 2.3 <Plug>MoveLineDown
 
-Move current down by one line.
+Move current line down by one.
 
 Default: nmap <A-j> <Plug>MoveLineDown
 
 -------------------------------------------------------------------------------
 2.4 <Plug>MoveLineUp
 
-Move current up by one line.
+Move current line up by one.
 
 Default: nmap <A-k> <Plug>MoveLineUp
+
+-------------------------------------------------------------------------------
+2.5 <Plug>MoveBlockHalfPageDown
+
+Move selected block down by half a page size
+
+Default: not mapped
+
+-------------------------------------------------------------------------------
+2.6 <Plug>MoveBlockHalfPageUp
+
+Move selected block up by half a page size
+
+Default: not mapped
+
+-------------------------------------------------------------------------------
+2.7 <Plug>MoveLineHalfPageDown
+
+Move current line down by half a page size.
+
+Default: not mapped
+
+-------------------------------------------------------------------------------
+2.7 <Plug>MoveLineHalfPageUp
+
+Move current line up by half a page size.
+
+Default: not mapped
 
 ===============================================================================
 3. License                                                       *move-license*
@@ -64,6 +92,9 @@ license.
 ===============================================================================
 3. Changelog                                                   *move-changelog*
 
+v1.2
+    * Add <Plug>Move{Block,Line}HalfPage{Up,Down} to move text in larger
+      increments.
 v1.1
     * Released on 08/10/13
     * Minor bug fixes (helptags, mapping, docs)

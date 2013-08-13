@@ -15,6 +15,10 @@ if !exists('g:move_map_keys')
     let g:move_map_keys = 1
 endif
 
+if !exists('g:move_key_modifier')
+    let g:move_key_modifier = 'A'
+endif
+
 function! s:ResetCursor()
     normal! gv
     normal! =
@@ -116,6 +120,10 @@ function! s:MoveLineHalfPageDown() range
     call s:MoveLineDown(distance)
 endfunction
 
+function! s:MoveKey(key)
+    return '<' . g:move_key_modifier . '-' . a:key . '>'
+endfunction
+
 
 vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineDown()<CR>
 vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineUp()<CR>
@@ -129,8 +137,8 @@ nnoremap <silent> <Plug>MoveLineHalfPageUp      :call <SID>MoveLineHalfPageUp()<
 
 
 if g:move_map_keys
-    vmap <A-j> <Plug>MoveBlockDown
-    vmap <A-k> <Plug>MoveBlockUp
-    nmap <A-j> <Plug>MoveLineDown
-    nmap <A-k> <Plug>MoveLineUp
+    execute 'vmap' s:MoveKey('j') '<Plug>MoveBlockDown'
+    execute 'vmap' s:MoveKey('k') '<Plug>MoveBlockUp'
+    execute 'nmap' s:MoveKey('j') '<Plug>MoveLineDown'
+    execute 'nmap' s:MoveKey('k') '<Plug>MoveLineUp'
 endif

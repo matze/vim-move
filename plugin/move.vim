@@ -23,7 +23,7 @@ function! s:ResetCursor()
 endfunction
 
 function! s:MoveBlockDown(start, end, count)
-    let next_line = a:start + a:count
+    let next_line = a:end + a:count
 
     if v:count > 0
         let next_line = next_line + v:count - 1

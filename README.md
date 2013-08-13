@@ -8,7 +8,7 @@ manner. Out of the box, the following keys are mapped:
     <A-k>   Move current line/selection up
     <A-j>   Move current line/selection down
 
-The mappings can be prefixed with a count, e.g. `5<C-k>` will move the selection
+The mappings can be prefixed with a count, e.g. `5<A-k>` will move the selection
 up by 5 lines.
 
 See [this](http://i.imgur.com/gIw2CCD.gif) short demo for a first impression.

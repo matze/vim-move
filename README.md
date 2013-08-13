@@ -13,6 +13,18 @@ up by 5 lines.
 
 See [this](http://i.imgur.com/gIw2CCD.gif) short demo for a first impression.
 
+## Customization
+
+Use `g:move_key_modifier` to set custom modifier for key bindings. For example,
+
+```vim
+let g:move_key_modifier = 'C'
+```
+
+create following key bindings:
+
+    <C-k>   Move current line/selections up
+    <C-j>   Move current line/selections down
 
 ## License
 

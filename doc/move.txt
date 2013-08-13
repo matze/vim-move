@@ -24,6 +24,11 @@ To enable custom key maps you must disable the automatic key maps with >
 
     let g:move_map_keys = 0
 
+The plugin provide finger-friendly mappings to move text around by using <jk>
+keys. Your can specify the key modifier that uses in key bindings with >
+
+    let g:move_key_modifier = 'M'
+
 All mappings can be prefixed with a {count} and will move {count} steps
 instead of one.
 
@@ -93,6 +98,7 @@ license.
 3. Changelog                                                   *move-changelog*
 
 v1.2
+    * Add key modifier for bindings (@vitalk)
     * Use <A-j> and <A-k> in normal and visual mode (@vitalk)
     * Add <Plug>Move{Block,Line}HalfPage{Up,Down} to move text in larger
       increments.

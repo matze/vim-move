@@ -1,9 +1,10 @@
 # move
 
-It's annoying to delete and yank parts of a text just to move it up and down a
-bit. There is the `:m[ove]` command but it is quite awkward to use nowadays.
-vim-move is a Vim plugin that moves lines and selections in a more visual
-manner. Out of the box, the following keys are mapped:
+It's annoying to delete and paste parts of a text just to move it up and down a
+bit. There is the `:m[ove]` command but it is quite awkward to use by todays
+standards. vim-move is a Vim plugin that moves lines and selections in a more
+visual manner. Out of the box, the following keys are mapped in visual and
+normal mode:
 
     <A-k>   Move current line/selection up
     <A-j>   Move current line/selection down
@@ -13,15 +14,29 @@ up by 5 lines.
 
 See [this](http://i.imgur.com/gIw2CCD.gif) short demo for a first impression.
 
+
+## Installation
+
+vim-move is compatible with all major plugin managers. To install it using
+Vundle, add
+
+```vim
+Bundle 'matze/vim-move'
+```
+
+to your `.vimrc`.
+
+
 ## Customization
 
-Use `g:move_key_modifier` to set custom modifier for key bindings. For example,
+Use `g:move_key_modifier` to set a custom modifier for key bindings. For
+example,
 
 ```vim
 let g:move_key_modifier = 'C'
 ```
 
-create following key bindings:
+which will create the following key bindings:
 
     <C-k>   Move current line/selections up
     <C-j>   Move current line/selections down

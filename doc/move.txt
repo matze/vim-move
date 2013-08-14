@@ -98,6 +98,7 @@ license.
 3. Changelog                                                   *move-changelog*
 
 v1.2
+    * Released on 08/14/13
     * Add key modifier for bindings (@vitalk)
     * Use <A-j> and <A-k> in normal and visual mode (@vitalk)
     * Add <Plug>Move{Block,Line}HalfPage{Up,Down} to move text in larger

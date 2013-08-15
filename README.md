@@ -12,7 +12,7 @@ normal mode:
 The mappings can be prefixed with a count, e.g. `5<A-k>` will move the selection
 up by 5 lines.
 
-See [this](http://i.imgur.com/gIw2CCD.gif) short demo for a first impression.
+See [this](http://i.imgur.com/RMv8KsJ.gif) short demo for a first impression.
 
 
 ## Installation

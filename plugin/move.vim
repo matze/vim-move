@@ -20,10 +20,7 @@ if !exists('g:move_key_modifier')
 endif
 
 function! s:ResetCursor()
-    normal! gv
-    normal! =
-    normal! gv
-    normal! ^
+    normal! gv=gv^
 endfunction
 
 function! s:MoveBlockDown(start, end, count)

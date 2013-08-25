@@ -63,14 +63,14 @@ Default: nmap <A-k> <Plug>MoveLineUp
 -------------------------------------------------------------------------------
 2.5 <Plug>MoveBlockHalfPageDown
 
-Move selected block down by half a page size
+Move selected block down by half a page size.
 
 Default: not mapped
 
 -------------------------------------------------------------------------------
 2.6 <Plug>MoveBlockHalfPageUp
 
-Move selected block up by half a page size
+Move selected block up by half a page size.
 
 Default: not mapped
 

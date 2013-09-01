@@ -97,6 +97,9 @@ license.
 ===============================================================================
 3. Changelog                                                   *move-changelog*
 
+v1.3-dev
+    * Disable moving for readonly files
+
 v1.2
     * Released on 08/14/13
     * Add key modifier for bindings (@vitalk)

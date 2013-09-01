@@ -23,10 +23,6 @@ function! s:ResetCursor()
 endfunction
 
 function! s:MoveBlockDown(start, end, count)
-    if &readonly
-        return
-    endif
-
     let next_line = a:end + a:count
 
     if v:count > 0
@@ -38,15 +34,11 @@ function! s:MoveBlockDown(start, end, count)
         return
     endif
 
-    execute a:start "," a:end "m " next_line
+    execute "silent" a:start "," a:end "m " next_line
     call s:ResetCursor()
 endfunction
 
 function! s:MoveBlockUp(start, end, count)
-    if &readonly
-        return
-    endif
-
     let prev_line = a:start - a:count - 1
 
     if v:count > 0
@@ -58,15 +50,11 @@ function! s:MoveBlockUp(start, end, count)
         return
     endif
 
-    execute a:start "," a:end "m " prev_line
+    execute "silent" a:start "," a:end "m " prev_line
     call s:ResetCursor()
 endfunction
 
 function! s:MoveLineUp(count) range
-    if &readonly
-        return
-    endif
-
     let distance = a:count + 1
 
     if v:count > 0
@@ -74,20 +62,17 @@ function! s:MoveLineUp(count) range
     endif
 
     if (line('.') - distance) < 0
-        execute 'm 0'
+        execute 'silent m 0'
         normal! ==
         return
     endif
 
-    execute 'm-' . distance
+    execute 'silent m-' . distance
+
     normal! ==
 endfunction
 
 function! s:MoveLineDown(count) range
-    if &readonly
-        return
-    endif
-
     let distance = a:count
 
     if v:count > 0
@@ -95,12 +80,12 @@ function! s:MoveLineDown(count) range
     endif
 
     if (line('.') + distance) > line('$')
-        execute 'm $'
+        execute 'silent m $'
         normal! ==
         return
     endif
 
-    execute 'm+' . distance
+    execute 'silent m+' . distance
     normal! ==
 endfunction
 

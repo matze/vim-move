@@ -32,6 +32,11 @@ keys. Your can specify the key modifier that uses in key bindings with >
 All mappings can be prefixed with a {count} and will move {count} steps
 instead of one.
 
+By default the plugin indents the buffer after every move operation. Can be 
+disabled with >
+
+	let g:move_auto_indent = 0
+
 -------------------------------------------------------------------------------
 2.1 <Plug>MoveBlockDown
 

@@ -18,6 +18,10 @@ if !exists('g:move_key_modifier')
     let g:move_key_modifier = 'A'
 endif
 
+if !exists('g:move_auto_indent')
+    let g:move_auto_indent = 1
+endif
+
 function! s:ResetCursor()
     normal! gv=gv^
 endfunction
@@ -63,13 +67,17 @@ function! s:MoveLineUp(count) range
 
     if (line('.') - distance) < 0
         execute 'silent m 0'
-        normal! ==
+        if (g:move_auto_indent == 1)
+            normal! ==
+        endif
         return
     endif
 
     execute 'silent m-' . distance
 
-    normal! ==
+    if (g:move_auto_indent == 1)
+        normal! ==
+    endif
 endfunction
 
 function! s:MoveLineDown(count) range
@@ -81,12 +89,16 @@ function! s:MoveLineDown(count) range
 
     if (line('.') + distance) > line('$')
         execute 'silent m $'
-        normal! ==
+        if (g:move_auto_indent == 1)
+            normal! ==
+        endif
         return
     endif
 
     execute 'silent m+' . distance
-    normal! ==
+    if (g:move_auto_indent == 1)
+        normal! ==
+    endif
 endfunction
 
 function! s:MoveBlockOneLineUp() range

@@ -102,7 +102,10 @@ license.
 ===============================================================================
 3. Changelog                                                   *move-changelog*
 
-v1.3-dev
+v1.3
+    * Released on 03/18/14
+    * Add g:move_auto_indent option to en-/disable auto indentation
+    * Do not modify readonly buffers
     * Silence :move commands to avoid first-time errors on read-only files.
 
 v1.2

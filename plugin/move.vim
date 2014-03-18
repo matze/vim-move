@@ -39,7 +39,11 @@ function! s:MoveBlockDown(start, end, count)
     endif
 
     execute "silent" a:start "," a:end "m " next_line
-    call s:ResetCursor()
+    if (g:move_auto_indent == 1)
+        call s:ResetCursor()
+    else
+        normal! gv
+    endif
 endfunction
 
 function! s:MoveBlockUp(start, end, count)
@@ -55,7 +59,11 @@ function! s:MoveBlockUp(start, end, count)
     endif
 
     execute "silent" a:start "," a:end "m " prev_line
-    call s:ResetCursor()
+    if (g:move_auto_indent == 1)
+        call s:ResetCursor()
+    else
+        normal! gv
+    endif
 endfunction
 
 function! s:MoveLineUp(count) range

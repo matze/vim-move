@@ -29,6 +29,12 @@ keys. Your can specify the key modifier that uses in key bindings with >
 
     let g:move_key_modifier = 'M'
 
+Mapping the meta ("alt") key may not work on certain terminals, in this case
+you have to map each key directly and may have to use an escape sequence using
+<C-v>. On Mac you may also have to change the interpretation of the meta key
+in the options (Terminal: "Use Option as Meta key", iTerm: "Left option key
+acts as +Esc").
+
 All mappings can be prefixed with a {count} and will move {count} steps
 instead of one.
 

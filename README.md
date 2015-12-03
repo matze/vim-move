@@ -13,6 +13,7 @@ The mappings can be prefixed with a count, e.g. `5<A-k>` will move the selection
 up by 5 lines.
 
 See this short demo for a first impression:
+
 ![vim-move demo](http://i.imgur.com/RMv8KsJ.gif)
 
 

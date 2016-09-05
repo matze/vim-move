@@ -1,0 +1,6 @@
+move-changelog	move.txt	/*move-changelog*
+move-contents	move.txt	/*move-contents*
+move-license	move.txt	/*move-license*
+move-mappings	move.txt	/*move-mappings*
+move-usage	move.txt	/*move-usage*
+move.txt	move.txt	/*move.txt*

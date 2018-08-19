@@ -142,7 +142,7 @@ license.
 3. Changelog                                                   *move-changelog*
 
 v1.4
-    * Not yet released
+    * Released on 08/19/18
     * New functionality for moving horizontally
     * Add g:move_past_end_of_line to control the move to the right.
 

@@ -38,10 +38,15 @@ acts as +Esc").
 All mappings can be prefixed with a {count} and will move {count} steps
 instead of one.
 
-By default the plugin indents the buffer after every move operation. Can be
-disabled with >
+By default the plugin indents the buffer after every up/down move operation.
+Can be disabled with >
 
     let g:move_auto_indent = 0
+
+By default the left/right move operations can move text beyond the limit of
+the line. Can be disabled with >
+
+    let g:move_past_end_of_line = 0
 
 -------------------------------------------------------------------------------
 2.1 <Plug>MoveBlockDown
@@ -58,42 +63,70 @@ Move selected block up by one line.
 Default: vmap <A-k> <Plug>MoveBlockUp
 
 -------------------------------------------------------------------------------
-2.3 <Plug>MoveLineDown
+2.3 <Plug>MoveBlockLeft
+
+Move selected block left by one column.
+
+Default: vmap <A-h> <Plug>MoveBlockLeft
+
+-------------------------------------------------------------------------------
+2.4 <Plug>MoveCharRight
+
+Move current bloc right by one column.
+
+Default: nmap <A-l> <Plug>MoveBlockLeft
+
+-------------------------------------------------------------------------------
+2.5 <Plug>MoveLineDown
 
 Move current line down by one.
 
 Default: nmap <A-j> <Plug>MoveLineDown
 
 -------------------------------------------------------------------------------
-2.4 <Plug>MoveLineUp
+2.6 <Plug>MoveLineUp
 
 Move current line up by one.
 
 Default: nmap <A-k> <Plug>MoveLineUp
 
 -------------------------------------------------------------------------------
-2.5 <Plug>MoveBlockHalfPageDown
+2.7 <Plug>MoveCharLeft
+
+Move current line up by one.
+
+Default: nmap <A-h> <Plug>MoveCharLeft
+
+-------------------------------------------------------------------------------
+2.8 <Plug>MoveCharRight
+
+Move current line up by one.
+
+Default: nmap <A-l> <Plug>MoveCharRight
+
+-------------------------------------------------------------------------------
+2.9 <Plug>MoveBlockHalfPageDown
 
 Move selected block down by half a page size.
 
 Default: not mapped
 
 -------------------------------------------------------------------------------
-2.6 <Plug>MoveBlockHalfPageUp
+2.10 <Plug>MoveBlockHalfPageUp
 
 Move selected block up by half a page size.
 
 Default: not mapped
 
 -------------------------------------------------------------------------------
-2.7 <Plug>MoveLineHalfPageDown
+2.11 <Plug>MoveLineHalfPageDown
 
 Move current line down by half a page size.
 
 Default: not mapped
 
 -------------------------------------------------------------------------------
-2.7 <Plug>MoveLineHalfPageUp
+2.12 <Plug>MoveLineHalfPageUp
 
 Move current line up by half a page size.
 
@@ -107,6 +140,11 @@ license.
 
 ===============================================================================
 3. Changelog                                                   *move-changelog*
+
+v1.4
+    * Not yet released
+    * New functionality for moving horizontally
+    * Add g:move_past_end_of_line to control the move to the right.
 
 v1.3
     * Released on 03/18/14

@@ -1,46 +1,57 @@
 " =============================================================================
 " File: plugin/move.vim
-" Description: Move lines and selections up and even down.
+" Description: Move lines and selections up, down, left and even right to the
+"              infinity.
 " Author: Matthias Vogelgesang <github.com/matze>
 " =============================================================================
 
 if exists('g:loaded_move') || &compatible
     finish
 endif
-
 let g:loaded_move = 1
 
-if !exists('g:move_map_keys')
-    let g:move_map_keys = 1
-endif
+" =====[ Configuration Variables ]=====
+function! s:SetDefaultValue(var, val)
+    if !exists(a:var)
+        execute 'let' a:var '=' string(a:val)
+    endif
+endfunction
 
-if !exists('g:move_key_modifier')
-    let g:move_key_modifier = 'A'
-endif
+call s:SetDefaultValue('g:move_map_keys', 1)
+call s:SetDefaultValue('g:move_key_modifier', 'A')
+call s:SetDefaultValue('g:move_auto_indent', 1)
+call s:SetDefaultValue('g:move_map_keys', 1)
+call s:SetDefaultValue('g:move_past_end_of_line', 1)
 
-if !exists('g:move_auto_indent')
-    let g:move_auto_indent = 1
-endif
+" =====[ Script local variables ]=====
+let s:command_blockwise_selection = "\<C-v>"
+" After deleting and pasting "gv" would select the old position but the
+" following command selects the position of the pasted text
+let s:command_select_after_P = '`[' . s:command_blockwise_selection . '`]'
 
-if !exists('g:move_past_end_of_line')
-    let g:move_past_end_of_line = 1
-endif
-
+" =====[ Utility functions ]=====
 function! s:ResetCursor()
     normal! gv=gv^
 endfunction
 
-function! s:MoveBlockDown(start, end, count)
-    let l:next_line = a:end + a:count
-
-    if v:count > 0
-        let l:next_line = l:next_line + v:count - 1
+function! s:AssertBlockwiseVisual(mode)
+    if a:mode ==# 'v'
+        execute 'normal!' s:command_blockwise_selection
     endif
+endfunction
 
-    if l:next_line > line('$')
-        call s:ResetCursor()
-        return
-    endif
+function! s:HalfWin()
+    return winheight('.') / 2
+endfunction
+
+function! s:MoveKey(key)
+    return '<' . g:move_key_modifier . '-' . a:key . '>'
+endfunction
+
+" =====[ Functionality ]=====
+function! s:MoveBlockDown(start, end, num)
+    let l:next_line = a:end + a:num + max([0, v:count - 1])
+    let l:next_line = min([line('$'), l:next_line])
 
     execute 'silent' a:start ',' a:end 'move ' l:next_line
     if (g:move_auto_indent == 1)
@@ -50,17 +61,9 @@ function! s:MoveBlockDown(start, end, count)
     endif
 endfunction
 
-function! s:MoveBlockUp(start, end, count)
-    let l:prev_line = a:start - a:count - 1
-
-    if v:count > 0
-        let l:prev_line = l:prev_line - v:count + 1
-    endif
-
-    if l:prev_line < 0
-        call s:ResetCursor()
-        return
-    endif
+function! s:MoveBlockUp(start, end, num)
+    let l:prev_line = a:start - a:num - 1 - max([0, v:count - 1])
+    let l:prev_line = max([0, l:prev_line])
 
     execute 'silent' a:start ',' a:end 'move ' l:prev_line
     if (g:move_auto_indent == 1)
@@ -71,36 +74,33 @@ function! s:MoveBlockUp(start, end, count)
 endfunction
 
 function! s:MoveBlockLeft() range
-    if visualmode() ==# "\<C-v>"
-        echomsg 'MoveBlockLeft can only be used in visual block'
-    endif
+    call s:AssertBlockwiseVisual(visualmode())
 
     let l:distance = v:count ? v:count : 1
-
-    let l:min_col = min([col("'<"), col("'>")])
+    let l:min_col  = min([col("'<"), col("'>")])
 
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
+
+    let l:move_command = 'silent normal! gvd'
     if l:min_col - l:distance <= 1
-        execute "silent normal! gvd0P`[\<C-v>`]"
+        let l:move_command .= '0P'
     else
-        execute 'silent normal! gvd' . l:distance . "hP`[\<C-v>`]"
+        let l:move_command .= l:distance . 'hP'
     endif
+    execute l:move_command . s:command_select_after_P
 
     let &virtualedit = l:old_virtualedit
 endfunction
 
 function! s:MoveBlockRight() range
-    if visualmode() ==# "\<C-v>"
-        echomsg 'MoveBlockLeft can only be used in visual block'
-    endif
+    call s:AssertBlockwiseVisual(visualmode())
 
     let l:distance = v:count ? v:count : 1
-
     let l:lens = map(getline(a:firstline, a:lastline), 'len(v:val)')
-    let [l:shorter_line_len, l:longer_line_len] = [min(l:lens), max(l:lens)]
+    let l:shorter_line_len = min(l:lens)
 
-    let l:are_same_lines = col("'<") == col("'>")
-    let l:max_col        = max([col("'<"), col("'>")])
+    let l:are_same_cols = (col("'<") == col("'>"))
+    let l:max_col       = max([col("'<"), col("'>")])
 
     if !g:move_past_end_of_line && (l:max_col + l:distance >= l:shorter_line_len)
         let l:distance = l:shorter_line_len - l:max_col
@@ -112,67 +112,54 @@ function! s:MoveBlockRight() range
     endif
 
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-    execute 'silent normal! gvd' . l:distance . "lP`[\<C-v>`]"
 
-    " Very strange things happen with 'virtualedit' set to all. One of the is that
-    " the selection loses one column at the left at reselection.
-    " The next line fixes it
-    if !l:are_same_lines && (l:max_col + l:distance < l:longer_line_len)
+    execute 'silent normal! gvd' . l:distance . 'lP' . s:command_select_after_P
+
+    " When 'virtualedit' is set to all the selection loses one column at the
+    " left at reselection. The next line fixes it
+    if !l:are_same_cols && (l:max_col + l:distance < l:lens[0])
         normal! oho
     endif
 
-   let &virtualedit = l:old_virtualedit
+    let &virtualedit = l:old_virtualedit
 endfunction
 
-function! s:MoveLineUp(count) range
-    let l:distance = a:count + 1
+function! s:MoveLineUp(count)
+    let l:distance = a:count + 1 + max([0, v:count - 1])
 
-    if v:count > 0
-        let l:distance = l:distance + v:count - 1
-    endif
-
+    let l:command = 'silent move '
     if (line('.') - l:distance) < 0
-        execute 'silent move 0'
-        if (g:move_auto_indent == 1)
-            normal! ==
-        endif
-        return
+        let l:command .= '0'
+    else
+        let l:command .= '-' . l:distance
     endif
-
-    execute 'silent m-' . l:distance
+    execute l:command
 
     if (g:move_auto_indent == 1)
         normal! ==
     endif
 endfunction
 
-function! s:MoveLineDown(count) range
-    let l:distance = a:count
+function! s:MoveLineDown(count)
+    let l:distance = a:count + max([0, v:count - 1])
 
-    if v:count > 0
-        let l:distance = l:distance + v:count - 1
-    endif
-
+    let l:command = 'silent move '
     if (line('.') + l:distance) > line('$')
-        silent move $
-        if (g:move_auto_indent == 1)
-            normal! ==
-        endif
-        return
+        let l:command .= '$'
+    else
+        let l:command .= '+' . l:distance
     endif
+    execute l:command
 
-    execute 'silent m+' . l:distance
     if (g:move_auto_indent == 1)
         normal! ==
     endif
 endfunction
 
-" Using range here fucks the col() function (because col() always returns 1 in
-" range functions), so use normal function and clear the range with <C-u> later
 function! s:MoveCharLeft()
     let l:distance = v:count ? v:count : 1
 
-    if (col('.') - l:distance <= 0)
+    if (col('.') - l:distance <= 1)
         silent normal! x0P
         return
     endif
@@ -195,53 +182,28 @@ function! s:MoveCharRight()
     let &virtualedit = l:old_virtualedit
 endfunction
 
-function! s:MoveBlockOneLineUp() range
-    call s:MoveBlockUp(a:firstline, a:lastline, 1)
+function! s:MoveBlockNumDown(num) range
+    call s:MoveBlockDown(a:firstline, a:lastline, a:num)
 endfunction
 
-function! s:MoveBlockOneLineDown() range
-    call s:MoveBlockDown(a:firstline, a:lastline, 1)
+function! s:MoveBlockNumUp(num) range
+    call s:MoveBlockUp(a:firstline, a:lastline, a:num)
 endfunction
 
-function! s:MoveBlockHalfPageUp() range
-    let l:distance = winheight('.') / 2
-    call s:MoveBlockUp(a:firstline, a:lastline, l:distance)
-endfunction
-
-function! s:MoveBlockHalfPageDown() range
-    let l:distance = winheight('.') / 2
-    call s:MoveBlockDown(a:firstline, a:lastline, l:distance)
-endfunction
-
-function! s:MoveLineHalfPageUp() range
-    let l:distance = winheight('.') / 2
-    call s:MoveLineUp(l:distance)
-endfunction
-
-function! s:MoveLineHalfPageDown() range
-    let l:distance = winheight('.') / 2
-    call s:MoveLineDown(l:distance)
-endfunction
-
-function! s:MoveKey(key)
-    return '<' . g:move_key_modifier . '-' . a:key . '>'
-endfunction
-
-
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineDown()<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineUp()<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageDown()<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageUp()<CR>
+" =====[ API ]=====
+vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockNumDown(1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockNumUp(1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockNumDown(s:HalfWin())<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockNumUp(s:HalfWin())<CR>
 vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft()<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight()<CR>
 
-nnoremap <silent> <Plug>MoveLineDown            :call <SID>MoveLineDown(1)<CR>
-nnoremap <silent> <Plug>MoveLineUp              :call <SID>MoveLineUp(1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageDown    :call <SID>MoveLineHalfPageDown()<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageUp      :call <SID>MoveLineHalfPageUp()<CR>
+nnoremap <silent> <Plug>MoveLineDown            :<C-u>call <SID>MoveLineDown(1)<CR>
+nnoremap <silent> <Plug>MoveLineUp              :<C-u>call <SID>MoveLineUp(1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u>call <SID>MoveLineDown(s:HalfWin())<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u>call <SID>MoveLineUp(s:HalfWin())<CR>
 nnoremap <silent> <Plug>MoveCharLeft            :<C-u>call <SID>MoveCharLeft()<CR>
 nnoremap <silent> <Plug>MoveCharRight           :<C-u>call <SID>MoveCharRight()<CR>
-
 
 if g:move_map_keys
     execute 'vmap' s:MoveKey('j') '<Plug>MoveBlockDown'

@@ -141,6 +141,11 @@ license.
 ===============================================================================
 3. Changelog                                                   *move-changelog*
 
+v1.4.1
+    * Bug corrections from 1.4
+    * If vertical movement receives a count past end of file, it moves to the
+      end instead of staying in place.
+
 v1.4
     * Released on 08/19/18
     * New functionality for moving horizontally

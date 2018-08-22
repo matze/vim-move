@@ -20,9 +20,30 @@ wrapping the :move command.
 ===============================================================================
 2. Mappings                                                     *move-mappings*
 
-To enable custom key maps you must disable the automatic key maps with >
+To enable/disable automatic key maps you can define the variable
+g:move_map_keys in to 1 or 0 respectively. IE, if you want to define your own
+key mappings you would put in your vimrc: >
 
     let g:move_map_keys = 0
+
+The default value of g:move_map_keys is 1 so all mappings are usually defined.
+
+The automatic key maps also can be enabled/disabled by parts defining
+g:move_map_keys as a dictionary instad of an integer. This can be
+done through the entries 'vertical' and 'horizontal' each of which should be
+also a dictionary with the integer (boolean) entries 'normal' and 'visual'.
+With that in mind, if you want to have the vertical mappings only enabled in
+visual mode but the horizontal mappings to be enabled in both modes you can
+define g:move_map_keys as: >
+
+    let g:move_map_keys = {}
+    let g:move_map_keys.vertical = {'normal': 0, 'visual': 1}
+    let g:move_map_keys.horizontal = {'normal': 1, 'visual': 1}
+
+Or, as the default values of all entries are also 1, it can be simply
+written as: >
+
+    let g:move_map_keys = {'vertical': {'normal': 0}}
 
 The plugin provide finger-friendly mappings to move text around by using <jk>
 keys. You can specify the key modifier that is used in key bindings with >
@@ -145,6 +166,7 @@ v1.4.1
     * Bug corrections from 1.4
     * If vertical movement receives a count past end of file, it moves to the
       end instead of staying in place.
+    * The standard mappings can be enabled by parts through a dictionary.
 
 v1.4
     * Released on 08/19/18

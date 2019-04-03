@@ -31,6 +31,10 @@ function! s:ResetCursor()
 endfunction
 
 function! s:MoveBlockDown(start, end, count)
+    if !&modifiable
+        return
+    endif
+
     let l:next_line = a:end + a:count
 
     if v:count > 0
@@ -51,6 +55,10 @@ function! s:MoveBlockDown(start, end, count)
 endfunction
 
 function! s:MoveBlockUp(start, end, count)
+    if !&modifiable
+        return
+    endif
+
     let l:prev_line = a:start - a:count - 1
 
     if v:count > 0
@@ -71,6 +79,10 @@ function! s:MoveBlockUp(start, end, count)
 endfunction
 
 function! s:MoveBlockLeft() range
+    if !&modifiable
+        return
+    endif
+
     if visualmode() ==# "\<C-v>"
         echomsg 'MoveBlockLeft can only be used in visual block'
     endif
@@ -90,6 +102,10 @@ function! s:MoveBlockLeft() range
 endfunction
 
 function! s:MoveBlockRight() range
+    if !&modifiable
+        return
+    endif
+
     if visualmode() ==# "\<C-v>"
         echomsg 'MoveBlockLeft can only be used in visual block'
     endif
@@ -125,6 +141,10 @@ function! s:MoveBlockRight() range
 endfunction
 
 function! s:MoveLineUp(count) range
+    if !&modifiable
+        return
+    endif
+
     let l:distance = a:count + 1
 
     if v:count > 0
@@ -147,6 +167,10 @@ function! s:MoveLineUp(count) range
 endfunction
 
 function! s:MoveLineDown(count) range
+    if !&modifiable
+        return
+    endif
+
     let l:distance = a:count
 
     if v:count > 0
@@ -170,6 +194,10 @@ endfunction
 " Using range here fucks the col() function (because col() always returns 1 in
 " range functions), so use normal function and clear the range with <C-u> later
 function! s:MoveCharLeft()
+    if !&modifiable
+        return
+    endif
+
     let l:distance = v:count ? v:count : 1
 
     if (col('.') - l:distance <= 0)
@@ -181,6 +209,10 @@ function! s:MoveCharLeft()
 endfunction
 
 function! s:MoveCharRight()
+    if !&modifiable
+        return
+    endif
+
     let l:distance = v:count ? v:count : 1
 
     if !g:move_past_end_of_line && (col('.') + l:distance >= col('$') - 1)

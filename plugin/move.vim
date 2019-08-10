@@ -83,8 +83,11 @@ function! s:MoveBlockLeft() range
         return
     endif
 
-    if visualmode() ==# "\<C-v>"
-        echomsg 'MoveBlockLeft can only be used in visual block'
+    if visualmode() ==# "V"
+        " trying to move a v-line selection left is a no-op, so preserve old
+        " selection and bail
+        normal! gv
+        return
     endif
 
     let l:distance = v:count ? v:count : 1
@@ -106,17 +109,15 @@ function! s:MoveBlockRight() range
         return
     endif
 
-    if visualmode() ==# "\<C-v>"
-        echomsg 'MoveBlockLeft can only be used in visual block'
+    if visualmode() ==# "V"
+        echomsg "MoveBlockRight can only be used in visual or visual block mode"
     endif
 
     let l:distance = v:count ? v:count : 1
 
     let l:lens = map(getline(a:firstline, a:lastline), 'len(v:val)')
     let [l:shorter_line_len, l:longer_line_len] = [min(l:lens), max(l:lens)]
-
-    let l:are_same_lines = col("'<") == col("'>")
-    let l:max_col        = max([col("'<"), col("'>")])
+    let l:max_col = max([col("'<"), col("'>")])
 
     if !g:move_past_end_of_line && (l:max_col + l:distance >= l:shorter_line_len)
         let l:distance = l:shorter_line_len - l:max_col
@@ -127,13 +128,19 @@ function! s:MoveBlockRight() range
         endif
     endif
 
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
+    if l:max_col + l:distance <= l:shorter_line_len
+        let l:ve_mode = 'onemore'
+    else
+        let l:ve_mode = 'all'
+    endif
+
+    let [l:old_virtualedit, &virtualedit] = [&virtualedit, l:ve_mode]
     execute 'silent normal! gvd' . l:distance . "lP`[\<C-v>`]"
 
     " Very strange things happen with 'virtualedit' set to all. One of the is that
     " the selection loses one column at the left at reselection.
     " The next line fixes it
-    if !l:are_same_lines && (l:max_col + l:distance < l:longer_line_len)
+    if l:ve_mode == 'all' && (l:max_col + l:distance < l:longer_line_len)
         normal! oho
     endif
 

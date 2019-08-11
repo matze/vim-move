@@ -93,7 +93,7 @@ function! s:MoveBlockLeft() range
     endif
 
     let l:distance = v:count ? v:count : 1
-    let l:min_col = min([col("'<"), col("'>")])
+    let l:min_col = min([virtcol("'<"), virtcol("'>")])
 
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
     call s:SaveDefaultRegister()
@@ -122,7 +122,7 @@ function! s:MoveBlockRight() range
 
     let l:lens = map(getline(a:firstline, a:lastline), 'len(v:val)')
     let [l:shorter_line_len, l:longer_line_len] = [min(l:lens), max(l:lens)]
-    let l:max_col = max([col("'<"), col("'>")])
+    let l:max_col = max([virtcol("'<"), virtcol("'>")])
 
     if !g:move_past_end_of_line && (l:max_col + l:distance >= l:shorter_line_len)
         let l:distance = l:shorter_line_len - l:max_col
@@ -216,7 +216,7 @@ function! s:MoveCharLeft()
     let l:distance = v:count ? v:count : 1
 
     call s:SaveDefaultRegister()
-    if (col('.') - l:distance <= 0)
+    if (virtcol('.') - l:distance <= 0)
         silent normal! x0P
         return
     endif
@@ -232,7 +232,7 @@ function! s:MoveCharRight()
 
     let l:distance = v:count ? v:count : 1
 
-    if !g:move_past_end_of_line && (col('.') + l:distance >= col('$') - 1)
+    if !g:move_past_end_of_line && (virtcol('.') + l:distance >= virtcol('$') - 1)
         silent normal! x$p
         return
     endif

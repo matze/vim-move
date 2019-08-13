@@ -87,22 +87,30 @@ function! s:MoveBlockUp(start, end, count)
 endfunction
 
 function! s:MoveBlockLeft() range
-    if !&modifiable || virtcol("$") == 1 || visualmode() ==# "V"
+    let l:min_col = min([virtcol("'<"), virtcol("'>")])
+
+    if !&modifiable || virtcol("$") == 1 || l:min_col == 1 || visualmode() ==# "V"
         normal! gv
         return
     endif
 
-    let l:distance = v:count ? v:count : 1
-    let l:min_col = min([virtcol("'<"), virtcol("'>")])
+    if visualmode() ==# "v" && a:lastline - a:firstline > 0
+        execute "silent normal! gv\<C-v>"
+        echomsg "Switching to visual block mode for moving multiple lines with MoveBlockLeft"
+        return
+    endif
+
+    let l:distance = min([l:min_col - 1, v:count ? v:count : 1])
+
+    if l:distance < 1
+        normal! gv
+        return
+    endif
 
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
     call s:SaveDefaultRegister()
 
-    if l:min_col - l:distance <= 1
-        execute "silent normal! gvd0P`[\<C-v>`]"
-    else
-        execute 'silent normal! gvd' . l:distance . "hP`[\<C-v>`]"
-    endif
+    execute 'silent normal! gvd' . l:distance . "hP`[\<C-v>`]"
 
     call s:RestoreDefaultRegister()
     let &virtualedit = l:old_virtualedit
@@ -115,41 +123,41 @@ function! s:MoveBlockRight() range
     endif
 
     if visualmode() ==# "V"
-        echomsg "MoveBlockRight can only be used in visual or visual block mode"
+        execute "silent normal! gv\<C-v>o0o$h"
+        echomsg "Switching to visual block mode for moving whole line(s) with MoveBlockRight"
+        return
+    endif
+
+    if visualmode() ==# "v" && a:lastline - a:firstline > 0
+        execute "silent normal! gv\<C-v>"
+        echomsg "Switching to visual block mode for moving multiple lines with MoveBlockRight"
+        return
     endif
 
     let l:distance = v:count ? v:count : 1
 
-    let l:lens = map(getline(a:firstline, a:lastline), 'len(v:val)')
-    let [l:shorter_line_len, l:longer_line_len] = [min(l:lens), max(l:lens)]
+    let l:lens = map(getline(a:firstline, a:lastline), 'strwidth(v:val)')
+    let l:shorter_line_len = min(l:lens)
     let l:max_col = max([virtcol("'<"), virtcol("'>")])
 
     if !g:move_past_end_of_line && (l:max_col + l:distance >= l:shorter_line_len)
         let l:distance = l:shorter_line_len - l:max_col
 
-        if l:distance == 0
+        if l:distance <= 0
             silent normal! gv
             return
         endif
     endif
 
-    if l:max_col + l:distance <= l:shorter_line_len
-        let l:ve_mode = 'onemore'
-    else
-        let l:ve_mode = 'all'
-    endif
-
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, l:ve_mode]
+    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
     call s:SaveDefaultRegister()
 
-    execute 'silent normal! gvd' . l:distance . "lP`[\<C-v>`]"
-
-    " Very strange things happen with 'virtualedit' set to all. One of the is that
-    " the selection loses one column at the left at reselection.
-    " The next line fixes it
-    if l:ve_mode == 'all' && (l:max_col + l:distance < l:longer_line_len)
-        normal! oho
-    endif
+    execute 'silent normal! gvd' . l:distance . "l"
+    " P behaves inconsistently in virtualedit 'all' mode; sometimes the cursor
+    " moves one right after pasting, other times it doesn't. This makes it
+    " difficult to rely on `[ to determine the start of the shifted selection.
+    let l:new_start_pos = virtcol(".")
+    execute 'silent normal! P' . l:new_start_pos . "|\<C-v>`]"
 
     call s:RestoreDefaultRegister()
     let &virtualedit = l:old_virtualedit

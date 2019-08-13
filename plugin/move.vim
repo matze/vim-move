@@ -209,20 +209,23 @@ endfunction
 " Using range here fucks the col() function (because col() always returns 1 in
 " range functions), so use normal function and clear the range with <C-u> later
 function! s:MoveCharLeft()
-    if !&modifiable || virtcol("$") == 1
+    if !&modifiable || virtcol("$") == 1 || virtcol(".") == 1
         return
     endif
 
     let l:distance = v:count ? v:count : 1
 
     call s:SaveDefaultRegister()
+
     if (virtcol('.') - l:distance <= 0)
         silent normal! x0P
-        return
+    else
+        let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
+        execute 'silent normal! x' . l:distance . 'hP'
+        let &virtualedit = l:old_virtualedit
     endif
 
     call s:RestoreDefaultRegister()
-    execute 'silent normal! x' . l:distance . 'hP'
 endfunction
 
 function! s:MoveCharRight()
@@ -231,19 +234,17 @@ function! s:MoveCharRight()
     endif
 
     let l:distance = v:count ? v:count : 1
+    call s:SaveDefaultRegister()
 
     if !g:move_past_end_of_line && (virtcol('.') + l:distance >= virtcol('$') - 1)
         silent normal! x$p
-        return
+    else
+        let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
+        execute 'silent normal! x' . l:distance . 'lP'
+        let &virtualedit = l:old_virtualedit
     endif
 
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-    call s:SaveDefaultRegister()
-
-    execute 'silent normal! x' . l:distance . 'lP'
-
     call s:RestoreDefaultRegister()
-    let &virtualedit = l:old_virtualedit
 endfunction
 
 function! s:MoveBlockOneLineUp() range

@@ -110,7 +110,22 @@ function! s:MoveBlockLeft() range
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
     call s:SaveDefaultRegister()
 
+    " save previous cursor position
+    silent normal! gv
+    let l:row_pos = getcurpos()[1]
+    let l:is_rhs = virtcol(".") == max([virtcol("'<"), virtcol("'>")])
+
     execute 'silent normal! gvd' . l:distance . "hP`[\<C-v>`]"
+
+    " restore previous cursor position
+    if getcurpos()[1] != l:row_pos
+        silent normal! o
+        if l:is_rhs
+           silent normal! O
+        endif
+    elseif !l:is_rhs
+        silent normal! O
+    endif
 
     call s:RestoreDefaultRegister()
     let &virtualedit = l:old_virtualedit
@@ -152,12 +167,27 @@ function! s:MoveBlockRight() range
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
     call s:SaveDefaultRegister()
 
+    " save previous cursor position
+    silent normal! gv
+    let l:row_pos = getcurpos()[1]
+    let l:is_rhs = virtcol(".") == l:max_col
+
     execute 'silent normal! gvd' . l:distance . "l"
     " P behaves inconsistently in virtualedit 'all' mode; sometimes the cursor
     " moves one right after pasting, other times it doesn't. This makes it
     " difficult to rely on `[ to determine the start of the shifted selection.
     let l:new_start_pos = virtcol(".")
     execute 'silent normal! P' . l:new_start_pos . "|\<C-v>`]"
+
+    " restore previous cursor position
+    if getcurpos()[1] != l:row_pos
+        silent normal! o
+        if l:is_rhs
+           silent normal! O
+        endif
+    elseif !l:is_rhs
+        silent normal! O
+    endif
 
     call s:RestoreDefaultRegister()
     let &virtualedit = l:old_virtualedit

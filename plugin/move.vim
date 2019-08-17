@@ -38,6 +38,13 @@ function! s:RestoreDefaultRegister()
    let @" = s:default_register_value
 endfunction
 
+function! s:GetRelativeCursorVirtCol()
+    let l:cursor_col = virtcol('.')
+    silent normal! ^
+    " cursor position relative line start taking into account of indentations
+    return l:cursor_col - virtcol('.') + 1
+endfunction
+
 function! s:MoveBlockDown(start, end, count)
     if !&modifiable
         return
@@ -156,10 +163,11 @@ function! s:MoveBlockRight() range
 endfunction
 
 function! s:MoveLineUp(count) range
-    if !&modifiable
+    if !&modifiable || line('.') == 1
         return
     endif
 
+    let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
     let l:distance = a:count + 1
 
     if v:count > 0
@@ -179,13 +187,17 @@ function! s:MoveLineUp(count) range
     if (g:move_auto_indent == 1)
         normal! ==
     endif
+
+    " restore cursor column position
+    execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
 endfunction
 
 function! s:MoveLineDown(count) range
-    if !&modifiable
+    if !&modifiable || line('.') ==  line('$')
         return
     endif
 
+    let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
     let l:distance = a:count
 
     if v:count > 0
@@ -204,6 +216,9 @@ function! s:MoveLineDown(count) range
     if (g:move_auto_indent == 1)
         normal! ==
     endif
+
+    " restore cursor column position
+    execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
 endfunction
 
 " Using range here fucks the col() function (because col() always returns 1 in

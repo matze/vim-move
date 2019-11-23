@@ -70,7 +70,7 @@ Move selected block left by one column.
 Default: vmap <A-h> <Plug>MoveBlockLeft
 
 -------------------------------------------------------------------------------
-2.4 <Plug>MoveCharRight
+2.4 <Plug>MoveBlockRight
 
 Move selected block right by one column.
 

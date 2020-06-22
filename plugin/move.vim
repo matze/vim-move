@@ -45,13 +45,12 @@ function! s:GetRelativeCursorVirtCol()
     return l:cursor_col - virtcol('.') + 1
 endfunction
 
-function! s:MoveBlockDown(start, end, nlines)
+function! s:MoveBlockDown(start, end, distance)
     if !&modifiable
         return
     endif
 
-    let l:distance = a:nlines * v:count1
-    let l:next_line = a:end + l:distance
+    let l:next_line = a:end + a:distance
 
     if l:next_line > line('$')
         call s:ResetCursor()
@@ -66,13 +65,12 @@ function! s:MoveBlockDown(start, end, nlines)
     endif
 endfunction
 
-function! s:MoveBlockUp(start, end, nlines)
+function! s:MoveBlockUp(start, end, distance)
     if !&modifiable
         return
     endif
 
-    let l:distance = a:nlines * v:count1
-    let l:prev_line = a:start - l:distance - 1
+    let l:prev_line = a:start - a:distance - 1
 
     if l:prev_line < 0
         call s:ResetCursor()
@@ -87,9 +85,9 @@ function! s:MoveBlockUp(start, end, nlines)
     endif
 endfunction
 
-function! s:MoveBlockLeft() range
+function! s:MoveBlockLeft(distance) range
     let l:min_col = min([virtcol("'<"), virtcol("'>")])
-    let l:distance = min([l:min_col - 1, v:count1])
+    let l:distance = min([a:distance, l:min_col - 1])
 
     if !&modifiable || virtcol("$") == 1 || l:distance <= 0 || visualmode() ==# "V"
         normal! gv
@@ -126,10 +124,10 @@ function! s:MoveBlockLeft() range
     let &virtualedit = l:old_virtualedit
 endfunction
 
-function! s:MoveBlockRight() range
+function! s:MoveBlockRight(distance) range
     let l:max_col = max([virtcol("'<"), virtcol("'>")])
-    let l:distance = v:count1
 
+    let l:distance = a:distance
     if !g:move_past_end_of_line
         let l:shorter_line_len = min(map(getline(a:firstline, a:lastline), 'strwidth(v:val)'))
         let l:distance = min([l:shorter_line_len - l:max_col, l:distance])
@@ -182,15 +180,14 @@ function! s:MoveBlockRight() range
     let &virtualedit = l:old_virtualedit
 endfunction
 
-function! s:MoveLineUp(nlines) range
+function! s:MoveLineUp(distance) range
     if !&modifiable || line('.') == 1
         return
     endif
 
-    let l:distance = a:nlines * v:count1
     let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
 
-    if (line('.') - l:distance) < 0
+    if (line('.') - a:distance) < 0
         execute 'silent move 0'
         if (g:move_auto_indent == 1)
             normal! ==
@@ -198,7 +195,7 @@ function! s:MoveLineUp(nlines) range
         return
     endif
 
-    execute 'silent m-' . (l:distance + 1)
+    execute 'silent m-' . (a:distance + 1)
 
     if (g:move_auto_indent == 1)
         normal! ==
@@ -208,15 +205,14 @@ function! s:MoveLineUp(nlines) range
     execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
 endfunction
 
-function! s:MoveLineDown(nlines) range
+function! s:MoveLineDown(distance) range
     if !&modifiable || line('.') ==  line('$')
         return
     endif
 
-    let l:distance = a:nlines * v:count1
     let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
 
-    if (line('.') + l:distance) > line('$')
+    if (line('.') + a:distance) > line('$')
         silent move $
         if (g:move_auto_indent == 1)
             normal! ==
@@ -224,7 +220,7 @@ function! s:MoveLineDown(nlines) range
         return
     endif
 
-    execute 'silent m+' . l:distance
+    execute 'silent m+' . a:distance
     if (g:move_auto_indent == 1)
         normal! ==
     endif
@@ -235,70 +231,67 @@ endfunction
 
 " Using range here fucks the col() function (because col() always returns 1 in
 " range functions), so use normal function and clear the range with <C-u> later
-function! s:MoveCharLeft()
+function! s:MoveCharLeft(distance)
     if !&modifiable || virtcol("$") == 1 || virtcol(".") == 1
         return
     endif
 
-    let l:distance = v:count1
-
     call s:SaveDefaultRegister()
 
-    if (virtcol('.') - l:distance <= 0)
+    if (virtcol('.') - a:distance <= 0)
         silent normal! x0P
     else
         let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
-        execute 'silent normal! x' . l:distance . 'hP'
+        execute 'silent normal! x' . a:distance . 'hP'
         let &virtualedit = l:old_virtualedit
     endif
 
     call s:RestoreDefaultRegister()
 endfunction
 
-function! s:MoveCharRight()
+function! s:MoveCharRight(distance)
     if !&modifiable || virtcol("$") == 1
         return
     endif
 
-    let l:distance = v:count1
     call s:SaveDefaultRegister()
 
-    if !g:move_past_end_of_line && (virtcol('.') + l:distance >= virtcol('$') - 1)
+    if !g:move_past_end_of_line && (virtcol('.') + a:distance >= virtcol('$') - 1)
         silent normal! x$p
     else
         let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-        execute 'silent normal! x' . l:distance . 'lP'
+        execute 'silent normal! x' . a:distance . 'lP'
         let &virtualedit = l:old_virtualedit
     endif
 
     call s:RestoreDefaultRegister()
 endfunction
 
-function! s:MoveBlockOneLineUp() range
-    call s:MoveBlockUp(a:firstline, a:lastline, 1)
+function! s:MoveBlockOneLineUp(count) range
+    call s:MoveBlockUp(a:firstline, a:lastline, a:count)
 endfunction
 
-function! s:MoveBlockOneLineDown() range
-    call s:MoveBlockDown(a:firstline, a:lastline, 1)
+function! s:MoveBlockOneLineDown(count) range
+    call s:MoveBlockDown(a:firstline, a:lastline, a:count)
 endfunction
 
-function! s:MoveBlockHalfPageUp() range
-    let l:distance = winheight('.') / 2
+function! s:MoveBlockHalfPageUp(count) range
+    let l:distance = a:count * (winheight('.') / 2)
     call s:MoveBlockUp(a:firstline, a:lastline, l:distance)
 endfunction
 
-function! s:MoveBlockHalfPageDown() range
-    let l:distance = winheight('.') / 2
+function! s:MoveBlockHalfPageDown(count) range
+    let l:distance = a:count * (winheight('.') / 2)
     call s:MoveBlockDown(a:firstline, a:lastline, l:distance)
 endfunction
 
-function! s:MoveLineHalfPageUp() range
-    let l:distance = winheight('.') / 2
+function! s:MoveLineHalfPageUp(count) range
+    let l:distance = a:count * (winheight('.') / 2)
     call s:MoveLineUp(l:distance)
 endfunction
 
-function! s:MoveLineHalfPageDown() range
-    let l:distance = winheight('.') / 2
+function! s:MoveLineHalfPageDown(count) range
+    let l:distance = a:count * (winheight('.') / 2)
     call s:MoveLineDown(l:distance)
 endfunction
 
@@ -307,19 +300,19 @@ function! s:MoveKey(key)
 endfunction
 
 
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineDown()<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineUp()<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageDown()<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageUp()<CR>
-vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft()<CR>
-vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight()<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineDown(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineUp(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageDown(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageUp(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
 
-nnoremap <silent> <Plug>MoveLineDown            :call <SID>MoveLineDown(1)<CR>
-nnoremap <silent> <Plug>MoveLineUp              :call <SID>MoveLineUp(1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageDown    :call <SID>MoveLineHalfPageDown()<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageUp      :call <SID>MoveLineHalfPageUp()<CR>
-nnoremap <silent> <Plug>MoveCharLeft            :<C-u>call <SID>MoveCharLeft()<CR>
-nnoremap <silent> <Plug>MoveCharRight           :<C-u>call <SID>MoveCharRight()<CR>
+nnoremap <silent> <Plug>MoveLineDown            :call <SID>MoveLineDown(v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineUp              :call <SID>MoveLineUp(v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageDown    :call <SID>MoveLineHalfPageDown(v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageUp      :call <SID>MoveLineHalfPageUp(v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharLeft            :<C-u>call <SID>MoveCharLeft(v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharRight           :<C-u>call <SID>MoveCharRight(v:count1)<CR>
 
 
 if g:move_map_keys

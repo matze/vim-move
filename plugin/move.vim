@@ -45,16 +45,13 @@ function! s:GetRelativeCursorVirtCol()
     return l:cursor_col - virtcol('.') + 1
 endfunction
 
-function! s:MoveBlockDown(start, end, count)
+function! s:MoveBlockDown(start, end, nlines)
     if !&modifiable
         return
     endif
 
-    let l:next_line = a:end + a:count
-
-    if v:count > 0
-        let l:next_line = l:next_line + v:count - 1
-    endif
+    let l:distance = a:nlines * (v:count ? v:count : 1)
+    let l:next_line = a:end + l:distance
 
     if l:next_line > line('$')
         call s:ResetCursor()
@@ -69,16 +66,13 @@ function! s:MoveBlockDown(start, end, count)
     endif
 endfunction
 
-function! s:MoveBlockUp(start, end, count)
+function! s:MoveBlockUp(start, end, nlines)
     if !&modifiable
         return
     endif
 
-    let l:prev_line = a:start - a:count - 1
-
-    if v:count > 0
-        let l:prev_line = l:prev_line - v:count + 1
-    endif
+    let l:distance = a:nlines * (v:count ? v:count : 1)
+    let l:prev_line = a:start - l:distance - 1
 
     if l:prev_line < 0
         call s:ResetCursor()
@@ -95,8 +89,9 @@ endfunction
 
 function! s:MoveBlockLeft() range
     let l:min_col = min([virtcol("'<"), virtcol("'>")])
+    let l:distance = min([l:min_col - 1, v:count ? v:count : 1])
 
-    if !&modifiable || virtcol("$") == 1 || l:min_col == 1 || visualmode() ==# "V"
+    if !&modifiable || virtcol("$") == 1 || l:distance <= 0 || visualmode() ==# "V"
         normal! gv
         return
     endif
@@ -104,13 +99,6 @@ function! s:MoveBlockLeft() range
     if visualmode() ==# "v" && a:lastline - a:firstline > 0
         execute "silent normal! gv\<C-v>"
         echomsg "Switching to visual block mode for moving multiple lines with MoveBlockLeft"
-        return
-    endif
-
-    let l:distance = min([l:min_col - 1, v:count ? v:count : 1])
-
-    if l:distance < 1
-        normal! gv
         return
     endif
 
@@ -139,7 +127,15 @@ function! s:MoveBlockLeft() range
 endfunction
 
 function! s:MoveBlockRight() range
-    if !&modifiable || virtcol("$") == 1
+    let l:max_col = max([virtcol("'<"), virtcol("'>")])
+    let l:distance = v:count ? v:count : 1
+
+    if !g:move_past_end_of_line
+        let l:shorter_line_len = min(map(getline(a:firstline, a:lastline), 'strwidth(v:val)'))
+        let l:distance = min([l:shorter_line_len - l:max_col, l:distance])
+    end
+
+    if !&modifiable || virtcol("$") == 1 || l:distance <= 0
         normal! gv
         return
     endif
@@ -156,20 +152,6 @@ function! s:MoveBlockRight() range
         return
     endif
 
-    let l:distance = v:count ? v:count : 1
-
-    let l:lens = map(getline(a:firstline, a:lastline), 'strwidth(v:val)')
-    let l:shorter_line_len = min(l:lens)
-    let l:max_col = max([virtcol("'<"), virtcol("'>")])
-
-    if !g:move_past_end_of_line && (l:max_col + l:distance >= l:shorter_line_len)
-        let l:distance = l:shorter_line_len - l:max_col
-
-        if l:distance <= 0
-            silent normal! gv
-            return
-        endif
-    endif
 
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
     call s:SaveDefaultRegister()
@@ -200,17 +182,13 @@ function! s:MoveBlockRight() range
     let &virtualedit = l:old_virtualedit
 endfunction
 
-function! s:MoveLineUp(count) range
+function! s:MoveLineUp(nlines) range
     if !&modifiable || line('.') == 1
         return
     endif
 
+    let l:distance = a:nlines * (v:count ? v:count : 1)
     let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
-    let l:distance = a:count + 1
-
-    if v:count > 0
-        let l:distance = l:distance + v:count - 1
-    endif
 
     if (line('.') - l:distance) < 0
         execute 'silent move 0'
@@ -220,7 +198,7 @@ function! s:MoveLineUp(count) range
         return
     endif
 
-    execute 'silent m-' . l:distance
+    execute 'silent m-' . (l:distance + 1)
 
     if (g:move_auto_indent == 1)
         normal! ==
@@ -230,17 +208,13 @@ function! s:MoveLineUp(count) range
     execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
 endfunction
 
-function! s:MoveLineDown(count) range
+function! s:MoveLineDown(nlines) range
     if !&modifiable || line('.') ==  line('$')
         return
     endif
 
+    let l:distance = a:nlines * (v:count ? v:count : 1)
     let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
-    let l:distance = a:count
-
-    if v:count > 0
-        let l:distance = l:distance + v:count - 1
-    endif
 
     if (line('.') + l:distance) > line('$')
         silent move $

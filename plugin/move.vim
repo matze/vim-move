@@ -50,7 +50,7 @@ function! s:MoveBlockDown(start, end, distance)
         return
     endif
 
-    let l:next_line = a:end + a:distance
+    let l:next_line = min([a:end + a:distance, line('$')])
 
     if l:next_line > line('$')
         call s:ResetCursor()
@@ -70,14 +70,14 @@ function! s:MoveBlockUp(start, end, distance)
         return
     endif
 
-    let l:prev_line = a:start - a:distance - 1
+    let l:prev_line = max([a:start - a:distance, 1])
 
     if l:prev_line < 0
         call s:ResetCursor()
         return
     endif
 
-    execute 'silent' a:start ',' a:end 'move ' l:prev_line
+    execute 'silent' a:start ',' a:end 'move ' (l:prev_line - 1)
     if (g:move_auto_indent == 1)
         call s:ResetCursor()
     else

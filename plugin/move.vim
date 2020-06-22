@@ -180,7 +180,7 @@ function! s:MoveBlockRight(distance) range
     let &virtualedit = l:old_virtualedit
 endfunction
 
-function! s:MoveLineUp(distance) range
+function! s:MoveLineUp(distance)
     if !&modifiable || line('.') == 1
         return
     endif
@@ -205,7 +205,7 @@ function! s:MoveLineUp(distance) range
     execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
 endfunction
 
-function! s:MoveLineDown(distance) range
+function! s:MoveLineDown(distance)
     if !&modifiable || line('.') ==  line('$')
         return
     endif
@@ -229,8 +229,6 @@ function! s:MoveLineDown(distance) range
     execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
 endfunction
 
-" Using range here fucks the col() function (because col() always returns 1 in
-" range functions), so use normal function and clear the range with <C-u> later
 function! s:MoveCharLeft(distance)
     if !&modifiable || virtcol("$") == 1 || virtcol(".") == 1
         return
@@ -285,12 +283,12 @@ function! s:MoveBlockHalfPageDown(count) range
     call s:MoveBlockDown(a:firstline, a:lastline, l:distance)
 endfunction
 
-function! s:MoveLineHalfPageUp(count) range
+function! s:MoveLineHalfPageUp(count)
     let l:distance = a:count * (winheight('.') / 2)
     call s:MoveLineUp(l:distance)
 endfunction
 
-function! s:MoveLineHalfPageDown(count) range
+function! s:MoveLineHalfPageDown(count)
     let l:distance = a:count * (winheight('.') / 2)
     call s:MoveLineDown(l:distance)
 endfunction
@@ -307,12 +305,16 @@ vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageUp(v
 vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
 
-nnoremap <silent> <Plug>MoveLineDown            :call <SID>MoveLineDown(v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineUp              :call <SID>MoveLineUp(v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageDown    :call <SID>MoveLineHalfPageDown(v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageUp      :call <SID>MoveLineHalfPageUp(v:count1)<CR>
-nnoremap <silent> <Plug>MoveCharLeft            :<C-u>call <SID>MoveCharLeft(v:count1)<CR>
-nnoremap <silent> <Plug>MoveCharRight           :<C-u>call <SID>MoveCharRight(v:count1)<CR>
+" We can't use functions defined with the 'range' attribute for moving lines
+" or characters. In the case of lines, it causes vim to complain with E16
+" (Invalid adress) if we try to move out of bounds. In the case of characters,
+" it messes up the result of calling col().
+nnoremap <silent> <Plug>MoveLineDown            :<C-u> call <SID>MoveLineDown(v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineUp              :<C-u> call <SID>MoveLineUp(v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineHalfPageDown(v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineHalfPageUp(v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharLeft(v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharRight(v:count1)<CR>
 
 
 if g:move_map_keys

@@ -50,7 +50,7 @@ function! s:MoveBlockDown(start, end, nlines)
         return
     endif
 
-    let l:distance = a:nlines * (v:count ? v:count : 1)
+    let l:distance = a:nlines * v:count1
     let l:next_line = a:end + l:distance
 
     if l:next_line > line('$')
@@ -71,7 +71,7 @@ function! s:MoveBlockUp(start, end, nlines)
         return
     endif
 
-    let l:distance = a:nlines * (v:count ? v:count : 1)
+    let l:distance = a:nlines * v:count1
     let l:prev_line = a:start - l:distance - 1
 
     if l:prev_line < 0
@@ -89,7 +89,7 @@ endfunction
 
 function! s:MoveBlockLeft() range
     let l:min_col = min([virtcol("'<"), virtcol("'>")])
-    let l:distance = min([l:min_col - 1, v:count ? v:count : 1])
+    let l:distance = min([l:min_col - 1, v:count1])
 
     if !&modifiable || virtcol("$") == 1 || l:distance <= 0 || visualmode() ==# "V"
         normal! gv
@@ -128,7 +128,7 @@ endfunction
 
 function! s:MoveBlockRight() range
     let l:max_col = max([virtcol("'<"), virtcol("'>")])
-    let l:distance = v:count ? v:count : 1
+    let l:distance = v:count1
 
     if !g:move_past_end_of_line
         let l:shorter_line_len = min(map(getline(a:firstline, a:lastline), 'strwidth(v:val)'))
@@ -187,7 +187,7 @@ function! s:MoveLineUp(nlines) range
         return
     endif
 
-    let l:distance = a:nlines * (v:count ? v:count : 1)
+    let l:distance = a:nlines * v:count1
     let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
 
     if (line('.') - l:distance) < 0
@@ -213,7 +213,7 @@ function! s:MoveLineDown(nlines) range
         return
     endif
 
-    let l:distance = a:nlines * (v:count ? v:count : 1)
+    let l:distance = a:nlines * v:count1
     let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
 
     if (line('.') + l:distance) > line('$')
@@ -240,7 +240,7 @@ function! s:MoveCharLeft()
         return
     endif
 
-    let l:distance = v:count ? v:count : 1
+    let l:distance = v:count1
 
     call s:SaveDefaultRegister()
 
@@ -260,7 +260,7 @@ function! s:MoveCharRight()
         return
     endif
 
-    let l:distance = v:count ? v:count : 1
+    let l:distance = v:count1
     call s:SaveDefaultRegister()
 
     if !g:move_past_end_of_line && (virtcol('.') + l:distance >= virtcol('$') - 1)

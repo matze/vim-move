@@ -34,6 +34,10 @@ function! s:RestoreDefaultRegister()
    let @" = s:default_register_value
 endfunction
 
+"
+" In visual mode, move the selected lines vertically.
+" Moves down if (distance > 0) and up if (distance < 0).
+"
 function s:MoveBlockVertically(distance) range
     if !&modifiable
         return
@@ -53,6 +57,10 @@ function s:MoveBlockVertically(distance) range
     normal! gv
 endfunction
 
+"
+" In visual mode, move the selected block to the left
+" Switches to visual-block mode first if another visual mode is selected.
+"
 function! s:MoveBlockLeft(distance) range
     let l:min_col = min([virtcol("'<"), virtcol("'>")])
     let l:distance = min([a:distance, l:min_col - 1])
@@ -92,6 +100,10 @@ function! s:MoveBlockLeft(distance) range
     let &virtualedit = l:old_virtualedit
 endfunction
 
+"
+" In visual mode, move the selected block to the right
+" Switches to visual-block mode first if another visual mode is selected.
+"
 function! s:MoveBlockRight(distance) range
     let l:max_col = max([virtcol("'<"), virtcol("'>")])
 
@@ -148,6 +160,10 @@ function! s:MoveBlockRight(distance) range
     let &virtualedit = l:old_virtualedit
 endfunction
 
+"
+" In normal mode, move the current line vertically.
+" Moves down if (distance > 0) and up if (distance < 0).
+"
 function! s:MoveLineVertically(distance)
     if !&modifiable
         return
@@ -176,6 +192,9 @@ function! s:MoveLineVertically(distance)
     execute 'silent normal!'  l:new_cursor_col . '|'
 endfunction
 
+"
+" In normal mode, move the character under the cursor to the left
+"
 function! s:MoveCharLeft(distance)
     if !&modifiable || virtcol("$") == 1 || virtcol(".") == 1
         return
@@ -194,6 +213,9 @@ function! s:MoveCharLeft(distance)
     call s:RestoreDefaultRegister()
 endfunction
 
+"
+" In normal mode, move the character under the cursor to the right
+"
 function! s:MoveCharRight(distance)
     if !&modifiable || virtcol("$") == 1
         return

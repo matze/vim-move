@@ -196,45 +196,35 @@ function! s:MoveLineVertically(distance)
 endfunction
 
 "
-" In normal mode, move the character under the cursor to the left
+" In normal mode, move the character under the cursor horizontally
+" Moves right (distance > 0) and left if (distance < 0).
 "
-function! s:MoveCharLeft(distance)
-    if !&modifiable || virtcol("$") == 1 || virtcol(".") == 1
+function! s:MoveCharHorizontally(distance)
+    if !&modifiable
+        return
+    endif
+
+    let l:curr = virtcol('.')
+    let l:next = l:curr + a:distance
+    if !g:move_past_end_of_line
+        let l:next = max([1, min([l:next, virtcol('$')-1])])
+    endif
+
+    if l:curr == l:next
+        " Don't add an empty change to the undo stack.
         return
     endif
 
     call s:SaveDefaultRegister()
+    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
 
-    if (virtcol('.') - a:distance <= 0)
-        silent normal! x0P
-    else
-        let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
-        execute 'silent normal! x' . a:distance . 'hP'
-        let &virtualedit = l:old_virtualedit
-    endif
+    normal! x
+    execute 'normal!' . (l:next.'|')
+    normal! P
 
+    let &virtualedit = l:old_virtualedit
     call s:RestoreDefaultRegister()
-endfunction
 
-"
-" In normal mode, move the character under the cursor to the right
-"
-function! s:MoveCharRight(distance)
-    if !&modifiable || virtcol("$") == 1
-        return
-    endif
-
-    call s:SaveDefaultRegister()
-
-    if !g:move_past_end_of_line && (virtcol('.') + a:distance >= virtcol('$') - 1)
-        silent normal! x$p
-    else
-        let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-        execute 'silent normal! x' . a:distance . 'lP'
-        let &virtualedit = l:old_virtualedit
-    endif
-
-    call s:RestoreDefaultRegister()
 endfunction
 
 function! s:HalfPageSize()
@@ -261,8 +251,8 @@ nnoremap <silent> <Plug>MoveLineDown            :<C-u> call <SID>MoveLineVertica
 nnoremap <silent> <Plug>MoveLineUp              :<C-u> call <SID>MoveLineVertically(-v:count1)<CR>
 nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineVertically( v:count1 * <SID>HalfPageSize())<CR>
 nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineVertically(-v:count1 * <SID>HalfPageSize())<CR>
-nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharLeft(v:count1)<CR>
-nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharRight(v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharHorizontally( v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharHorizontally(-v:count1)<CR>
 
 
 if g:move_map_keys

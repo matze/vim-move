@@ -26,10 +26,6 @@ if !exists('g:move_past_end_of_line')
     let g:move_past_end_of_line = 1
 endif
 
-function! s:ResetCursor()
-    normal! gv=gv^
-endfunction
-
 function! s:SaveDefaultRegister()
    let s:default_register_value = @"
 endfunction
@@ -38,51 +34,23 @@ function! s:RestoreDefaultRegister()
    let @" = s:default_register_value
 endfunction
 
-function! s:GetRelativeCursorVirtCol()
-    let l:cursor_col = virtcol('.')
-    silent normal! ^
-    " cursor position relative line start taking into account of indentations
-    return l:cursor_col - virtcol('.') + 1
-endfunction
-
-function! s:MoveBlockDown(start, end, distance)
+function s:MoveBlockVertically(distance) range
     if !&modifiable
         return
     endif
 
-    let l:next_line = min([a:end + a:distance, line('$')])
-
-    if l:next_line > line('$')
-        call s:ResetCursor()
-        return
-    endif
-
-    execute 'silent' a:start ',' a:end 'move ' l:next_line
-    if (g:move_auto_indent == 1)
-        call s:ResetCursor()
+    if a:distance <= 0
+        let l:after = max([1,         a:firstline + a:distance]) - 1
     else
-        normal! gv
+        let l:after = min([line('$'), a:lastline  + a:distance])
     endif
-endfunction
+    execute 'silent' a:firstline ',' a:lastline 'move ' l:after
 
-function! s:MoveBlockUp(start, end, distance)
-    if !&modifiable
-        return
-    endif
-
-    let l:prev_line = max([a:start - a:distance, 1])
-
-    if l:prev_line < 0
-        call s:ResetCursor()
-        return
+    if g:move_auto_indent
+        normal! gv=
     endif
 
-    execute 'silent' a:start ',' a:end 'move ' (l:prev_line - 1)
-    if (g:move_auto_indent == 1)
-        call s:ResetCursor()
-    else
-        normal! gv
-    endif
+    normal! gv
 endfunction
 
 function! s:MoveBlockLeft(distance) range
@@ -180,53 +148,32 @@ function! s:MoveBlockRight(distance) range
     let &virtualedit = l:old_virtualedit
 endfunction
 
-function! s:MoveLineUp(distance)
-    if !&modifiable || line('.') == 1
+function! s:MoveLineVertically(distance)
+    if !&modifiable
         return
     endif
 
-    let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
+    " Remember the current cursor position. When we move or reindent a line
+    " Vim will move the cursor to the first non-blank character.
+    let l:old_cursor_col = virtcol('.')
+    silent normal! ^
+    let l:old_indent     = virtcol('.')
 
-    if (line('.') - a:distance) < 0
-        execute 'silent move 0'
-        if (g:move_auto_indent == 1)
-            normal! ==
-        endif
-        return
+    if a:distance <= 0
+        let l:after = max([1,         line('.') + a:distance]) - 1
+    else
+        let l:after = min([line('$'), line('.') + a:distance])
+    endif
+    execute 'silent move' l:after
+
+    if g:move_auto_indent
+        silent normal! ==
     endif
 
-    execute 'silent m-' . (a:distance + 1)
-
-    if (g:move_auto_indent == 1)
-        normal! ==
-    endif
-
-    " restore cursor column position
-    execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
-endfunction
-
-function! s:MoveLineDown(distance)
-    if !&modifiable || line('.') ==  line('$')
-        return
-    endif
-
-    let l:relative_cursor_col = s:GetRelativeCursorVirtCol()
-
-    if (line('.') + a:distance) > line('$')
-        silent move $
-        if (g:move_auto_indent == 1)
-            normal! ==
-        endif
-        return
-    endif
-
-    execute 'silent m+' . a:distance
-    if (g:move_auto_indent == 1)
-        normal! ==
-    endif
-
-    " restore cursor column position
-    execute 'silent normal!' . max([1, (virtcol('.') + l:relative_cursor_col - 1)]) . '|'
+    " Restore the cursor column, taking indentation changes into account.
+    let l:new_indent = virtcol('.')
+    let l:new_cursor_col = max([1, l:old_cursor_col - l:old_indent + l:new_indent])
+    execute 'silent normal!'  l:new_cursor_col . '|'
 endfunction
 
 function! s:MoveCharLeft(distance)
@@ -265,32 +212,8 @@ function! s:MoveCharRight(distance)
     call s:RestoreDefaultRegister()
 endfunction
 
-function! s:MoveBlockOneLineUp(count) range
-    call s:MoveBlockUp(a:firstline, a:lastline, a:count)
-endfunction
-
-function! s:MoveBlockOneLineDown(count) range
-    call s:MoveBlockDown(a:firstline, a:lastline, a:count)
-endfunction
-
-function! s:MoveBlockHalfPageUp(count) range
-    let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveBlockUp(a:firstline, a:lastline, l:distance)
-endfunction
-
-function! s:MoveBlockHalfPageDown(count) range
-    let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveBlockDown(a:firstline, a:lastline, l:distance)
-endfunction
-
-function! s:MoveLineHalfPageUp(count)
-    let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveLineUp(l:distance)
-endfunction
-
-function! s:MoveLineHalfPageDown(count)
-    let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveLineDown(l:distance)
+function! s:HalfPageSize()
+    return winheight('.') / 2
 endfunction
 
 function! s:MoveKey(key)
@@ -298,10 +221,10 @@ function! s:MoveKey(key)
 endfunction
 
 
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineDown(v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineUp(v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageDown(v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageUp(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
 vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
 
@@ -309,10 +232,10 @@ vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:coun
 " or characters. In the case of lines, it causes vim to complain with E16
 " (Invalid adress) if we try to move out of bounds. In the case of characters,
 " it messes up the result of calling col().
-nnoremap <silent> <Plug>MoveLineDown            :<C-u> call <SID>MoveLineDown(v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineUp              :<C-u> call <SID>MoveLineUp(v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineHalfPageDown(v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineHalfPageUp(v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineDown            :<C-u> call <SID>MoveLineVertically( v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineUp              :<C-u> call <SID>MoveLineVertically(-v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineVertically( v:count1 * <SID>HalfPageSize())<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineVertically(-v:count1 * <SID>HalfPageSize())<CR>
 nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharLeft(v:count1)<CR>
 nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharRight(v:count1)<CR>
 

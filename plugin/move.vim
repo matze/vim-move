@@ -26,10 +26,6 @@ if !exists('g:move_past_end_of_line')
     let g:move_past_end_of_line = 1
 endif
 
-function! s:ResetCursor()
-    normal! gv=gv^
-endfunction
-
 function! s:SaveDefaultRegister()
    let s:default_register_value = @"
 endfunction
@@ -38,34 +34,23 @@ function! s:RestoreDefaultRegister()
    let @" = s:default_register_value
 endfunction
 
-function! s:MoveBlockDown(start, end, distance)
+function s:MoveBlockVertically(start, end, distance)
     if !&modifiable
         return
     endif
 
-    let l:next_line = min([a:end + a:distance, line('$')])
-
-    execute 'silent' a:start ',' a:end 'move ' l:next_line
-    if (g:move_auto_indent == 1)
-        call s:ResetCursor()
+    if a:distance <= 0
+        let l:after = max([1,         a:start + a:distance]) - 1
     else
-        normal! gv
+        let l:after = min([line('$'), a:end   + a:distance])
     endif
-endfunction
+    execute 'silent' a:start ',' a:end 'move ' l:after
 
-function! s:MoveBlockUp(start, end, distance)
-    if !&modifiable
-        return
-    endif
-
-    let l:prev_line = max([a:start - a:distance, 1])
-
-    execute 'silent' a:start ',' a:end 'move ' (l:prev_line - 1)
     if (g:move_auto_indent == 1)
-        call s:ResetCursor()
-    else
-        normal! gv
+        normal! gv=
     endif
+
+    normal! gv
 endfunction
 
 function! s:MoveBlockLeft(distance) range
@@ -227,22 +212,13 @@ function! s:MoveCharRight(distance)
     call s:RestoreDefaultRegister()
 endfunction
 
-function! s:MoveBlockOneLineUp(count) range
-    call s:MoveBlockUp(a:firstline, a:lastline, a:count)
+function! s:MoveBlockOneLineVertically(count) range
+    call s:MoveBlockVertically(a:firstline, a:lastline, a:count)
 endfunction
 
-function! s:MoveBlockOneLineDown(count) range
-    call s:MoveBlockDown(a:firstline, a:lastline, a:count)
-endfunction
-
-function! s:MoveBlockHalfPageUp(count) range
+function! s:MoveBlockHalfPageVertically(count) range
     let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveBlockUp(a:firstline, a:lastline, l:distance)
-endfunction
-
-function! s:MoveBlockHalfPageDown(count) range
-    let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveBlockDown(a:firstline, a:lastline, l:distance)
+    call s:MoveBlockVertically(a:firstline, a:lastline, l:distance)
 endfunction
 
 function! s:MoveLineHalfPageVertically(count)
@@ -255,10 +231,10 @@ function! s:MoveKey(key)
 endfunction
 
 
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineDown(v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineUp(v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageDown(v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageUp(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageVertically(-v:count1)<CR>
 vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
 

@@ -26,14 +26,6 @@ if !exists('g:move_past_end_of_line')
     let g:move_past_end_of_line = 1
 endif
 
-function! s:SaveDefaultRegister()
-   let s:default_register_value = @"
-endfunction
-
-function! s:RestoreDefaultRegister()
-   let @" = s:default_register_value
-endfunction
-
 "
 " In visual mode, move the selected lines vertically.
 " Moves down if (distance > 0) and up if (distance < 0).
@@ -80,7 +72,7 @@ function! s:MoveBlockLeft(distance) range
     endif
 
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
-    call s:SaveDefaultRegister()
+    let l:old_default_register = @"
 
     " save previous cursor position
     silent normal! gv
@@ -99,7 +91,7 @@ function! s:MoveBlockLeft(distance) range
         silent normal! O
     endif
 
-    call s:RestoreDefaultRegister()
+    let @" = l:old_default_register
     let &virtualedit = l:old_virtualedit
 endfunction
 
@@ -135,7 +127,7 @@ function! s:MoveBlockRight(distance) range
 
 
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-    call s:SaveDefaultRegister()
+    let l:old_default_register = @"
 
     " save previous cursor position
     silent normal! gv
@@ -159,7 +151,7 @@ function! s:MoveBlockRight(distance) range
         silent normal! O
     endif
 
-    call s:RestoreDefaultRegister()
+    let @" = l:old_default_register
     let &virtualedit = l:old_virtualedit
 endfunction
 
@@ -215,7 +207,7 @@ function! s:MoveCharHorizontally(distance)
         return
     endif
 
-    call s:SaveDefaultRegister()
+    let l:old_default_register = @"
     let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
 
     normal! x
@@ -223,7 +215,7 @@ function! s:MoveCharHorizontally(distance)
     normal! P
 
     let &virtualedit = l:old_virtualedit
-    call s:RestoreDefaultRegister()
+    let @" = l:old_default_register
 
 endfunction
 

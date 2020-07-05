@@ -38,17 +38,20 @@ endfunction
 " In visual mode, move the selected lines vertically.
 " Moves down if (distance > 0) and up if (distance < 0).
 "
-function s:MoveBlockVertically(distance) range
+function s:MoveBlockVertically(distance)
     if !&modifiable
         return
     endif
 
+    let l:first = line("'<")
+    let l:last  = line("'>")
+
     if a:distance <= 0
-        let l:after = max([1,         a:firstline + a:distance]) - 1
+        let l:after = max([1,         l:first + a:distance]) - 1
     else
-        let l:after = min([line('$'), a:lastline  + a:distance])
+        let l:after = min([line('$'), l:last  + a:distance])
     endif
-    execute 'silent' a:firstline ',' a:lastline 'move ' l:after
+    execute 'silent' l:first ',' l:last 'move ' l:after
 
     if g:move_auto_indent
         normal! gv=
@@ -243,10 +246,10 @@ function! s:MoveKey(key)
 endfunction
 
 
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockVertically( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockVertically(-v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :<C-u> call <SID>MoveBlockVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :<C-u> call <SID>MoveBlockVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :<C-u> call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :<C-u> call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
 vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
 

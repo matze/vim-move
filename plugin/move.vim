@@ -46,7 +46,7 @@ function s:MoveBlockVertically(start, end, distance)
     endif
     execute 'silent' a:start ',' a:end 'move ' l:after
 
-    if (g:move_auto_indent == 1)
+    if g:move_auto_indent
         normal! gv=
     endif
 
@@ -166,7 +166,7 @@ function! s:MoveLineVertically(distance)
     endif
     execute 'silent move' l:after
 
-    if (g:move_auto_indent == 1)
+    if g:move_auto_indent
         silent normal! ==
     endif
 

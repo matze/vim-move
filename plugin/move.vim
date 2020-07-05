@@ -212,18 +212,12 @@ function! s:MoveCharRight(distance)
     call s:RestoreDefaultRegister()
 endfunction
 
-function! s:MoveBlockOneLineVertically(count) range
+function! s:HalfPageSize()
+    return winheight('.') / 2
+endfunction
+
+function! s:MoveRangeVertically(count) range
     call s:MoveBlockVertically(a:firstline, a:lastline, a:count)
-endfunction
-
-function! s:MoveBlockHalfPageVertically(count) range
-    let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveBlockVertically(a:firstline, a:lastline, l:distance)
-endfunction
-
-function! s:MoveLineHalfPageVertically(count)
-    let l:distance = a:count * (winheight('.') / 2)
-    call s:MoveLineVertically(l:distance)
 endfunction
 
 function! s:MoveKey(key)
@@ -231,10 +225,10 @@ function! s:MoveKey(key)
 endfunction
 
 
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockOneLineVertically( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockOneLineVertically(-v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockHalfPageVertically( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockHalfPageVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveRangeVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveRangeVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveRangeVertically( v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveRangeVertically(-v:count1 * <SID>HalfPageSize())<CR>
 vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
 
@@ -244,8 +238,8 @@ vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:coun
 " it messes up the result of calling col().
 nnoremap <silent> <Plug>MoveLineDown            :<C-u> call <SID>MoveLineVertically( v:count1)<CR>
 nnoremap <silent> <Plug>MoveLineUp              :<C-u> call <SID>MoveLineVertically(-v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineHalfPageVertically( v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineHalfPageVertically(-v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineVertically( v:count1 * <SID>HalfPageSize())<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineVertically(-v:count1 * <SID>HalfPageSize())<CR>
 nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharLeft(v:count1)<CR>
 nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharRight(v:count1)<CR>
 

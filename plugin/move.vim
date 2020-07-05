@@ -51,7 +51,7 @@ function s:MoveBlockVertically(distance)
     else
         let l:after = min([line('$'), l:last  + a:distance])
     endif
-    execute 'silent' l:first ',' l:last 'move ' l:after
+    execute l:first ',' l:last 'move ' l:after
 
     if g:move_auto_indent
         normal! gv=
@@ -175,7 +175,7 @@ function! s:MoveLineVertically(distance)
     " Remember the current cursor position. When we move or reindent a line
     " Vim will move the cursor to the first non-blank character.
     let l:old_cursor_col = virtcol('.')
-    silent normal! ^
+    normal! ^
     let l:old_indent     = virtcol('.')
 
     if a:distance <= 0
@@ -183,16 +183,16 @@ function! s:MoveLineVertically(distance)
     else
         let l:after = min([line('$'), line('.') + a:distance])
     endif
-    execute 'silent move' l:after
+    execute 'move' l:after
 
     if g:move_auto_indent
-        silent normal! ==
+        normal! ==
     endif
 
     " Restore the cursor column, taking indentation changes into account.
     let l:new_indent = virtcol('.')
     let l:new_cursor_col = max([1, l:old_cursor_col - l:old_indent + l:new_indent])
-    execute 'silent normal!'  l:new_cursor_col . '|'
+    execute 'normal!'  (l:new_cursor_col . '|')
 endfunction
 
 "

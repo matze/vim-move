@@ -34,17 +34,17 @@ function! s:RestoreDefaultRegister()
    let @" = s:default_register_value
 endfunction
 
-function s:MoveBlockVertically(start, end, distance)
+function s:MoveBlockVertically(distance) range
     if !&modifiable
         return
     endif
 
     if a:distance <= 0
-        let l:after = max([1,         a:start + a:distance]) - 1
+        let l:after = max([1,         a:firstline + a:distance]) - 1
     else
-        let l:after = min([line('$'), a:end   + a:distance])
+        let l:after = min([line('$'), a:lastline  + a:distance])
     endif
-    execute 'silent' a:start ',' a:end 'move ' l:after
+    execute 'silent' a:firstline ',' a:lastline 'move ' l:after
 
     if g:move_auto_indent
         normal! gv=
@@ -216,19 +216,15 @@ function! s:HalfPageSize()
     return winheight('.') / 2
 endfunction
 
-function! s:MoveRangeVertically(count) range
-    call s:MoveBlockVertically(a:firstline, a:lastline, a:count)
-endfunction
-
 function! s:MoveKey(key)
     return '<' . g:move_key_modifier . '-' . a:key . '>'
 endfunction
 
 
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveRangeVertically( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveRangeVertically(-v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveRangeVertically( v:count1 * <SID>HalfPageSize())<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveRangeVertically(-v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
 vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
 

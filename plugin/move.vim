@@ -26,128 +26,10 @@ if !exists('g:move_past_end_of_line')
     let g:move_past_end_of_line = 1
 endif
 
-function! s:SaveDefaultRegister()
-   let s:default_register_value = @"
-endfunction
-
-function! s:RestoreDefaultRegister()
-   let @" = s:default_register_value
-endfunction
-
-function s:MoveBlockVertically(distance) range
-    if !&modifiable
-        return
-    endif
-
-    if a:distance <= 0
-        let l:after = max([1,         a:firstline + a:distance]) - 1
-    else
-        let l:after = min([line('$'), a:lastline  + a:distance])
-    endif
-    execute 'silent' a:firstline ',' a:lastline 'move ' l:after
-
-    if g:move_auto_indent
-        normal! gv=
-    endif
-
-    normal! gv
-endfunction
-
-function! s:MoveBlockLeft(distance) range
-    let l:min_col = min([virtcol("'<"), virtcol("'>")])
-    let l:distance = min([a:distance, l:min_col - 1])
-
-    if !&modifiable || virtcol("$") == 1 || l:distance <= 0 || visualmode() ==# "V"
-        normal! gv
-        return
-    endif
-
-    if visualmode() ==# "v" && a:lastline - a:firstline > 0
-        execute "silent normal! gv\<C-v>"
-        echomsg "Switching to visual block mode for moving multiple lines with MoveBlockLeft"
-        return
-    endif
-
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
-    call s:SaveDefaultRegister()
-
-    " save previous cursor position
-    silent normal! gv
-    let l:row_pos = getcurpos()[1]
-    let l:is_rhs = virtcol(".") == max([virtcol("'<"), virtcol("'>")])
-
-    execute 'silent normal! gvd' . l:distance . "hP`[\<C-v>`]"
-
-    " restore previous cursor position
-    if getcurpos()[1] != l:row_pos
-        silent normal! o
-        if l:is_rhs
-           silent normal! O
-        endif
-    elseif !l:is_rhs
-        silent normal! O
-    endif
-
-    call s:RestoreDefaultRegister()
-    let &virtualedit = l:old_virtualedit
-endfunction
-
-function! s:MoveBlockRight(distance) range
-    let l:max_col = max([virtcol("'<"), virtcol("'>")])
-
-    let l:distance = a:distance
-    if !g:move_past_end_of_line
-        let l:shorter_line_len = min(map(getline(a:firstline, a:lastline), 'strwidth(v:val)'))
-        let l:distance = min([l:shorter_line_len - l:max_col, l:distance])
-    end
-
-    if !&modifiable || virtcol("$") == 1 || l:distance <= 0
-        normal! gv
-        return
-    endif
-
-    if visualmode() ==# "V"
-        execute "silent normal! gv\<C-v>o0o$h"
-        echomsg "Switching to visual block mode for moving whole line(s) with MoveBlockRight"
-        return
-    endif
-
-    if visualmode() ==# "v" && a:lastline - a:firstline > 0
-        execute "silent normal! gv\<C-v>"
-        echomsg "Switching to visual block mode for moving multiple lines with MoveBlockRight"
-        return
-    endif
-
-
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-    call s:SaveDefaultRegister()
-
-    " save previous cursor position
-    silent normal! gv
-    let l:row_pos = getcurpos()[1]
-    let l:is_rhs = virtcol(".") == l:max_col
-
-    execute 'silent normal! gvd' . l:distance . "l"
-    " P behaves inconsistently in virtualedit 'all' mode; sometimes the cursor
-    " moves one right after pasting, other times it doesn't. This makes it
-    " difficult to rely on `[ to determine the start of the shifted selection.
-    let l:new_start_pos = virtcol(".")
-    execute 'silent normal! P' . l:new_start_pos . "|\<C-v>`]"
-
-    " restore previous cursor position
-    if getcurpos()[1] != l:row_pos
-        silent normal! o
-        if l:is_rhs
-           silent normal! O
-        endif
-    elseif !l:is_rhs
-        silent normal! O
-    endif
-
-    call s:RestoreDefaultRegister()
-    let &virtualedit = l:old_virtualedit
-endfunction
-
+"
+" In normal mode, move the current line vertically.
+" Moves down if (distance > 0) and up if (distance < 0).
+"
 function! s:MoveLineVertically(distance)
     if !&modifiable
         return
@@ -156,7 +38,7 @@ function! s:MoveLineVertically(distance)
     " Remember the current cursor position. When we move or reindent a line
     " Vim will move the cursor to the first non-blank character.
     let l:old_cursor_col = virtcol('.')
-    silent normal! ^
+    normal! ^
     let l:old_indent     = virtcol('.')
 
     if a:distance <= 0
@@ -164,53 +46,136 @@ function! s:MoveLineVertically(distance)
     else
         let l:after = min([line('$'), line('.') + a:distance])
     endif
-    execute 'silent move' l:after
+    execute 'move' l:after
 
     if g:move_auto_indent
-        silent normal! ==
+        normal! ==
     endif
 
     " Restore the cursor column, taking indentation changes into account.
     let l:new_indent = virtcol('.')
     let l:new_cursor_col = max([1, l:old_cursor_col - l:old_indent + l:new_indent])
-    execute 'silent normal!'  l:new_cursor_col . '|'
+    execute 'normal!'  (l:new_cursor_col . '|')
 endfunction
 
-function! s:MoveCharLeft(distance)
-    if !&modifiable || virtcol("$") == 1 || virtcol(".") == 1
+"
+" In visual mode, move the selected lines vertically.
+" Moves down if (distance > 0) and up if (distance < 0).
+"
+function s:MoveBlockVertically(distance)
+    if !&modifiable
         return
     endif
 
-    call s:SaveDefaultRegister()
+    let l:first = line("'<")
+    let l:last  = line("'>")
 
-    if (virtcol('.') - a:distance <= 0)
-        silent normal! x0P
+    if a:distance <= 0
+        let l:after = max([1,         l:first + a:distance]) - 1
     else
-        let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'onemore']
-        execute 'silent normal! x' . a:distance . 'hP'
-        let &virtualedit = l:old_virtualedit
+        let l:after = min([line('$'), l:last  + a:distance])
+    endif
+    execute l:first ',' l:last 'move ' l:after
+
+    if g:move_auto_indent
+        normal! gv=
     endif
 
-    call s:RestoreDefaultRegister()
+    normal! gv
 endfunction
 
-function! s:MoveCharRight(distance)
-    if !&modifiable || virtcol("$") == 1
+"
+" In normal mode, move the character under the cursor horizontally
+" Moves right (distance > 0) and left if (distance < 0).
+"
+function! s:MoveCharHorizontally(distance)
+    if !&modifiable
         return
     endif
 
-    call s:SaveDefaultRegister()
-
-    if !g:move_past_end_of_line && (virtcol('.') + a:distance >= virtcol('$') - 1)
-        silent normal! x$p
-    else
-        let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-        execute 'silent normal! x' . a:distance . 'lP'
-        let &virtualedit = l:old_virtualedit
+    let l:curr = virtcol('.')
+    let l:before = l:curr + a:distance
+    if !g:move_past_end_of_line
+        let l:before = max([1, min([l:before, virtcol('$')-1])])
     endif
 
-    call s:RestoreDefaultRegister()
+    if l:curr == l:before
+        " Don't add an empty change to the undo stack.
+        return
+    endif
+
+    let l:old_default_register = @"
+    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
+
+    normal! x
+    execute 'normal!' . (l:before.'|')
+    normal! P
+
+    let &virtualedit = l:old_virtualedit
+    let @" = l:old_default_register
+
 endfunction
+
+"
+" In visual mode, move the selected block to the left
+" Moves right (distance > 0) and left if (distance < 0).
+" Switches to visual-block mode first if another visual mode is selected.
+"
+function! s:MoveBlockHorizontally(distance)
+    if !&modifiable
+        return
+    endif
+
+    if visualmode() ==# 'V'
+        echomsg 'vim-move: Cannot move horizontally in linewise visual mode'
+        return
+    endif
+
+    normal! gv
+
+    if visualmode() ==# 'v'
+        echomsg 'vim-move: Switching to visual block mode'
+        execute "normal! \<C-v>"
+    endif
+
+    let l:cols = [virtcol("'<"), virtcol("'>")]
+    let l:first = min(l:cols)
+    let l:last  = max(l:cols)
+    let l:width = l:last - l:first + 1
+
+    let l:before = max([1, l:first + a:distance])
+    if a:distance > 0 && !g:move_past_end_of_line
+        let l:shortest = min(map(getline("'<", "'>"), 'strwidth(v:val)'))
+        if l:last < l:shortest
+            let l:before = min([l:before, l:shortest - width + 1])
+        else
+            let l:before = l:first
+        endif
+    endif
+
+    if l:first == l:before
+        " Don't add an empty change to the undo stack.
+        return
+    endif
+
+    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
+    let l:old_default_register = @"
+
+    normal! d
+    execute 'normal!' . (l:before.'|')
+    normal! P
+
+    let @" = l:old_default_register
+    let &virtualedit = l:old_virtualedit
+
+    " Reselect the pasted text.
+    " For some reason, `[ doesn't always point where it should -- sometimes it
+    " is off by one. Maybe it is because of the virtualedit=all? The
+    " workaround we found is to recompute the destination column by hand.
+    execute 'normal!' . (l:before.'|') . "\<C-v>`]"
+
+endfunction
+
 
 function! s:HalfPageSize()
     return winheight('.') / 2
@@ -220,24 +185,26 @@ function! s:MoveKey(key)
     return '<' . g:move_key_modifier . '-' . a:key . '>'
 endfunction
 
+" Note: An older version of this program used callbacks with the "range"
+" attribute to support being called with a selection range as a parameter.
+" However, that had some problems: we would get E16 errors if the user tried
+" to perform an out-of bounds move and the computations that used col() would
+" also return the wrong results. Because of this, we have switched everything
+" to using <C-u>.
 
-vnoremap <silent> <Plug>MoveBlockDown           :call <SID>MoveBlockVertically( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :call <SID>MoveBlockVertically(-v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
-vnoremap <silent> <Plug>MoveBlockLeft           :call <SID>MoveBlockLeft(v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockRight          :call <SID>MoveBlockRight(v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :<C-u> call <SID>MoveBlockVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :<C-u> call <SID>MoveBlockVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :<C-u> call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :<C-u> call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockRight          :<C-u> call <SID>MoveBlockHorizontally( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockLeft           :<C-u> call <SID>MoveBlockHorizontally(-v:count1)<CR>
 
-" We can't use functions defined with the 'range' attribute for moving lines
-" or characters. In the case of lines, it causes vim to complain with E16
-" (Invalid adress) if we try to move out of bounds. In the case of characters,
-" it messes up the result of calling col().
 nnoremap <silent> <Plug>MoveLineDown            :<C-u> call <SID>MoveLineVertically( v:count1)<CR>
 nnoremap <silent> <Plug>MoveLineUp              :<C-u> call <SID>MoveLineVertically(-v:count1)<CR>
 nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineVertically( v:count1 * <SID>HalfPageSize())<CR>
 nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineVertically(-v:count1 * <SID>HalfPageSize())<CR>
-nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharLeft(v:count1)<CR>
-nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharRight(v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharHorizontally( v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharHorizontally(-v:count1)<CR>
 
 
 if g:move_map_keys

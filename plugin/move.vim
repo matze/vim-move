@@ -59,16 +59,16 @@ endfunction
 "
 function! s:MoveLineVertically(distance)
 
-    let l:old_cursor_col = virtcol('.')
+    let l:old_col    = virtcol('.')
     normal! ^
-    let l:old_indent     = virtcol('.')
+    let l:old_indent = virtcol('.')
 
     call s:MoveVertically(line('.'), line('.'), a:distance)
 
     normal! ^
-    let l:new_indent     = virtcol('.')
-    let l:new_cursor_col = max([1, l:old_cursor_col - l:old_indent + l:new_indent])
-    execute 'normal!'  (l:new_cursor_col . '|')
+    let l:new_indent = virtcol('.')
+    let l:new_col    = max([1, l:old_col - l:old_indent + l:new_indent])
+    execute 'normal!'  (l:new_col . '|')
 endfunction
 
 "
@@ -145,7 +145,7 @@ function! s:MoveBlockHorizontally(distance)
     if a:distance > 0 && !g:move_past_end_of_line
         let l:shortest = min(map(getline("'<", "'>"), 'strwidth(v:val)'))
         if l:last < l:shortest
-            let l:before = min([l:before, l:shortest - width + 1])
+            let l:before = min([l:before, l:shortest - l:width + 1])
         else
             let l:before = l:first
         endif

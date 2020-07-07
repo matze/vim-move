@@ -82,9 +82,12 @@ function! s:MoveBlockHorizontally(distance)
     let l:before = max([1, l:first + a:distance])
     if a:distance > 0 && !g:move_past_end_of_line
         let l:shortest = min(map(getline("'<", "'>"), 'strwidth(v:val)'))
-        let l:limit    = max([l:first, l:shortest-width+1])
-        let l:before   = min([l:before, l:limit])
-    end
+        if l:last < l:shortest
+            let l:before = min([l:before, l:shortest - width + 1])
+        else
+            let l:before = l:first
+        endif
+    endif
 
     if l:first == l:before
         " Don't add an empty change to the undo stack.

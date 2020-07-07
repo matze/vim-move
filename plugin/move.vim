@@ -27,6 +27,38 @@ if !exists('g:move_past_end_of_line')
 endif
 
 "
+" In normal mode, move the current line vertically.
+" Moves down if (distance > 0) and up if (distance < 0).
+"
+function! s:MoveLineVertically(distance)
+    if !&modifiable
+        return
+    endif
+
+    " Remember the current cursor position. When we move or reindent a line
+    " Vim will move the cursor to the first non-blank character.
+    let l:old_cursor_col = virtcol('.')
+    normal! ^
+    let l:old_indent     = virtcol('.')
+
+    if a:distance <= 0
+        let l:after = max([1,         line('.') + a:distance]) - 1
+    else
+        let l:after = min([line('$'), line('.') + a:distance])
+    endif
+    execute 'move' l:after
+
+    if g:move_auto_indent
+        normal! ==
+    endif
+
+    " Restore the cursor column, taking indentation changes into account.
+    let l:new_indent = virtcol('.')
+    let l:new_cursor_col = max([1, l:old_cursor_col - l:old_indent + l:new_indent])
+    execute 'normal!'  (l:new_cursor_col . '|')
+endfunction
+
+"
 " In visual mode, move the selected lines vertically.
 " Moves down if (distance > 0) and up if (distance < 0).
 "
@@ -50,6 +82,38 @@ function s:MoveBlockVertically(distance)
     endif
 
     normal! gv
+endfunction
+
+"
+" In normal mode, move the character under the cursor horizontally
+" Moves right (distance > 0) and left if (distance < 0).
+"
+function! s:MoveCharHorizontally(distance)
+    if !&modifiable
+        return
+    endif
+
+    let l:curr = virtcol('.')
+    let l:before = l:curr + a:distance
+    if !g:move_past_end_of_line
+        let l:before = max([1, min([l:before, virtcol('$')-1])])
+    endif
+
+    if l:curr == l:before
+        " Don't add an empty change to the undo stack.
+        return
+    endif
+
+    let l:old_default_register = @"
+    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
+
+    normal! x
+    execute 'normal!' . (l:before.'|')
+    normal! P
+
+    let &virtualedit = l:old_virtualedit
+    let @" = l:old_default_register
+
 endfunction
 
 "
@@ -112,69 +176,6 @@ function! s:MoveBlockHorizontally(distance)
 
 endfunction
 
-"
-" In normal mode, move the current line vertically.
-" Moves down if (distance > 0) and up if (distance < 0).
-"
-function! s:MoveLineVertically(distance)
-    if !&modifiable
-        return
-    endif
-
-    " Remember the current cursor position. When we move or reindent a line
-    " Vim will move the cursor to the first non-blank character.
-    let l:old_cursor_col = virtcol('.')
-    normal! ^
-    let l:old_indent     = virtcol('.')
-
-    if a:distance <= 0
-        let l:after = max([1,         line('.') + a:distance]) - 1
-    else
-        let l:after = min([line('$'), line('.') + a:distance])
-    endif
-    execute 'move' l:after
-
-    if g:move_auto_indent
-        normal! ==
-    endif
-
-    " Restore the cursor column, taking indentation changes into account.
-    let l:new_indent = virtcol('.')
-    let l:new_cursor_col = max([1, l:old_cursor_col - l:old_indent + l:new_indent])
-    execute 'normal!'  (l:new_cursor_col . '|')
-endfunction
-
-"
-" In normal mode, move the character under the cursor horizontally
-" Moves right (distance > 0) and left if (distance < 0).
-"
-function! s:MoveCharHorizontally(distance)
-    if !&modifiable
-        return
-    endif
-
-    let l:curr = virtcol('.')
-    let l:before = l:curr + a:distance
-    if !g:move_past_end_of_line
-        let l:before = max([1, min([l:before, virtcol('$')-1])])
-    endif
-
-    if l:curr == l:before
-        " Don't add an empty change to the undo stack.
-        return
-    endif
-
-    let l:old_default_register = @"
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-
-    normal! x
-    execute 'normal!' . (l:before.'|')
-    normal! P
-
-    let &virtualedit = l:old_virtualedit
-    let @" = l:old_default_register
-
-endfunction
 
 function! s:HalfPageSize()
     return winheight('.') / 2

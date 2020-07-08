@@ -27,61 +27,59 @@ if !exists('g:move_past_end_of_line')
 endif
 
 "
-" In normal mode, move the current line vertically.
-" Moves down if (distance > 0) and up if (distance < 0).
+" Move and possibly reindent the given lines.
+" Goes down if (distance > 0) and up if (distance < 0).
+" Places the cursor at last moved line.
 "
-function! s:MoveLineVertically(distance)
+function! s:MoveVertically(first, last, distance)
     if !&modifiable
         return
     endif
 
-    " Remember the current cursor position. When we move or reindent a line
-    " Vim will move the cursor to the first non-blank character.
+    " To avoid 'Invalid range' errors we must ensure that the destination
+    " line is valid and that we don't try to move a range into itself.
+    if a:distance <= 0
+        let l:after = max([1,         a:first + a:distance]) - 1
+    else
+        let l:after = min([line('$'), a:last  + a:distance])
+    endif
+    execute a:first ',' a:last 'move ' l:after
+
+    " After a :move the '[ and '] marks point to first and last moved line
+    " and the cursor is placed at the last line.
+    if g:move_auto_indent
+        normal! =g'[ g']
+    endif
+
+endfunction
+
+"
+" In normal mode, move the current line vertically.
+" The cursor stays pointing at the same character as before.
+"
+function! s:MoveLineVertically(distance)
+
     let l:old_cursor_col = virtcol('.')
     normal! ^
     let l:old_indent     = virtcol('.')
 
-    if a:distance <= 0
-        let l:after = max([1,         line('.') + a:distance]) - 1
-    else
-        let l:after = min([line('$'), line('.') + a:distance])
-    endif
-    execute 'move' l:after
+    call s:MoveVertically(line('.'), line('.'), a:distance)
 
-    if g:move_auto_indent
-        normal! ==
-    endif
-
-    " Restore the cursor column, taking indentation changes into account.
-    let l:new_indent = virtcol('.')
+    normal! ^
+    let l:new_indent     = virtcol('.')
     let l:new_cursor_col = max([1, l:old_cursor_col - l:old_indent + l:new_indent])
     execute 'normal!'  (l:new_cursor_col . '|')
 endfunction
 
 "
 " In visual mode, move the selected lines vertically.
-" Moves down if (distance > 0) and up if (distance < 0).
+" Maintains the current selection, albeit not exactly if auto_indent is on.
 "
 function s:MoveBlockVertically(distance)
-    if !&modifiable
-        return
-    endif
 
-    let l:first = line("'<")
-    let l:last  = line("'>")
-
-    if a:distance <= 0
-        let l:after = max([1,         l:first + a:distance]) - 1
-    else
-        let l:after = min([line('$'), l:last  + a:distance])
-    endif
-    execute l:first ',' l:last 'move ' l:after
-
-    if g:move_auto_indent
-        normal! gv=
-    endif
-
+    call s:MoveVertically(line("'<"), line("'>"), a:distance)
     normal! gv
+
 endfunction
 
 "

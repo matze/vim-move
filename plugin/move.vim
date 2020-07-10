@@ -31,7 +31,7 @@ endif
 " Goes down if (distance > 0) and up if (distance < 0).
 " Places the cursor at last moved line.
 "
-function! s:MoveVertically(first, last, distance)
+function s:MoveVertically(first, last, distance)
     if !&modifiable
         return
     endif
@@ -57,7 +57,7 @@ endfunction
 " In normal mode, move the current line vertically.
 " The cursor stays pointing at the same character as before.
 "
-function! s:MoveLineVertically(distance)
+function s:MoveLineVertically(distance)
 
     let l:old_col    = virtcol('.')
     normal! ^
@@ -86,7 +86,7 @@ endfunction
 " In normal mode, move the character under the cursor horizontally
 " Moves right (distance > 0) and left if (distance < 0).
 "
-function! s:MoveCharHorizontally(distance)
+function s:MoveCharHorizontally(distance)
     if !&modifiable
         return
     endif
@@ -119,7 +119,7 @@ endfunction
 " Moves right (distance > 0) and left if (distance < 0).
 " Switches to visual-block mode first if another visual mode is selected.
 "
-function! s:MoveBlockHorizontally(distance)
+function s:MoveBlockHorizontally(distance)
     if !&modifiable
         return
     endif
@@ -180,11 +180,11 @@ function! s:MoveBlockHorizontally(distance)
 endfunction
 
 
-function! s:HalfPageSize()
+function s:HalfPageSize()
     return winheight('.') / 2
 endfunction
 
-function! s:MoveKey(key)
+function s:MoveKey(key)
     return '<' . g:move_key_modifier . '-' . a:key . '>'
 endfunction
 

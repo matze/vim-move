@@ -115,7 +115,7 @@ function! s:MoveCharHorizontally(distance)
 endfunction
 
 "
-" In visual mode, move the selected block to the left
+" In visual mode, move the selected block horizontally.
 " Moves right (distance > 0) and left if (distance < 0).
 " Switches to visual-block mode first if another visual mode is selected.
 "
@@ -156,21 +156,26 @@ function! s:MoveBlockHorizontally(distance)
         return
     endif
 
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
     let l:old_default_register = @"
-
     normal! d
+
+    let l:old_virtualedit = &virtualedit
+    if l:before >= virtcol('$')
+        let &virtualedit = 'all'
+    else
+        " Because of a Vim <= 8.2 bug, we must disable virtualedit in this case.
+        " See https://github.com/vim/vim/pull/6430
+        let &virtualedit = ''
+    endif
+
     execute 'normal!' . (l:before.'|')
     normal! P
 
-    let @" = l:old_default_register
     let &virtualedit = l:old_virtualedit
+    let @" = l:old_default_register
 
     " Reselect the pasted text.
-    " For some reason, `[ doesn't always point where it should -- sometimes it
-    " is off by one. Maybe it is because of the virtualedit=all? The
-    " workaround we found is to recompute the destination column by hand.
-    execute 'normal!' . (l:before.'|') . "\<C-v>`]"
+    execute "normal! g`[\<C-v>g`]"
 
 endfunction
 

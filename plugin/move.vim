@@ -48,7 +48,7 @@ function! s:MoveVertically(first, last, distance)
     " After a :move the '[ and '] marks point to first and last moved line
     " and the cursor is placed at the last line.
     if g:move_auto_indent
-        normal! =g'[ g']
+        normal! g'[=g']
     endif
 
 endfunction

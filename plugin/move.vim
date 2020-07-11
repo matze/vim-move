@@ -82,68 +82,26 @@ function s:MoveBlockVertically(distance)
 
 endfunction
 
+
 "
-" In normal mode, move the character under the cursor horizontally
-" Moves right (distance > 0) and left if (distance < 0).
+" If in normal mode, moves the character under the cursor.
+" If in blockwise visual mode, moves the selected rectangular area.
+" Goes right if (distance > 0) and left if (distance < 0).
+" Returns whether an edit was made.
 "
-function s:MoveCharHorizontally(distance)
+function s:MoveHorizontally(corner1, corner2, distance)
     if !&modifiable
-        return
+        return 0
     endif
 
-    let l:curr = virtcol('.')
-    let l:before = l:curr + a:distance
-    if !g:move_past_end_of_line
-        let l:before = max([1, min([l:before, virtcol('$')-1])])
-    endif
-
-    if l:curr == l:before
-        " Don't add an empty change to the undo stack.
-        return
-    endif
-
-    let l:old_default_register = @"
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-
-    normal! x
-    execute 'normal!' . (l:before.'|')
-    normal! P
-
-    let &virtualedit = l:old_virtualedit
-    let @" = l:old_default_register
-
-endfunction
-
-"
-" In visual mode, move the selected block horizontally.
-" Moves right (distance > 0) and left if (distance < 0).
-" Switches to visual-block mode first if another visual mode is selected.
-"
-function s:MoveBlockHorizontally(distance)
-    if !&modifiable
-        return
-    endif
-
-    if visualmode() ==# 'V'
-        echomsg 'vim-move: Cannot move horizontally in linewise visual mode'
-        return
-    endif
-
-    normal! gv
-
-    if visualmode() ==# 'v'
-        echomsg 'vim-move: Switching to visual block mode'
-        execute "normal! \<C-v>"
-    endif
-
-    let l:cols = [virtcol("'<"), virtcol("'>")]
+    let l:cols = [virtcol(a:corner1), virtcol(a:corner2)]
     let l:first = min(l:cols)
     let l:last  = max(l:cols)
     let l:width = l:last - l:first + 1
 
     let l:before = max([1, l:first + a:distance])
     if a:distance > 0 && !g:move_past_end_of_line
-        let l:shortest = min(map(getline("'<", "'>"), 'strwidth(v:val)'))
+        let l:shortest = min(map(getline(a:corner1, a:corner2), 'strwidth(v:val)'))
         if l:last < l:shortest
             let l:before = min([l:before, l:shortest - l:width + 1])
         else
@@ -152,12 +110,12 @@ function s:MoveBlockHorizontally(distance)
     endif
 
     if l:first == l:before
-        " Don't add an empty change to the undo stack.
-        return
+        " Don't add an empty change to the undo stack
+        return 0
     endif
 
     let l:old_default_register = @"
-    normal! d
+    normal! x
 
     let l:old_virtualedit = &virtualedit
     if l:before >= virtcol('$')
@@ -174,8 +132,39 @@ function s:MoveBlockHorizontally(distance)
     let &virtualedit = l:old_virtualedit
     let @" = l:old_default_register
 
-    " Reselect the pasted text.
-    execute "normal! g`[\<C-v>g`]"
+    return 1
+endfunction
+
+"
+" In normal mode, move the character under the cursor horizontally
+"
+function s:MoveCharHorizontally(distance)
+
+    call s:MoveHorizontally('.', '.', a:distance)
+
+endfunction
+
+"
+" If in blockwise visual mode, move the selected rectangular area.
+" If in characterwise visual mode do the same, after switching to blockwise.
+" If in linewise visual mode, do nothing.
+"
+function s:MoveBlockHorizontally(distance)
+
+    normal! gv
+
+    if visualmode() ==# 'V'
+        echoerr 'vim-move: Cannot move horizontally in linewise visual mode'
+        return
+    endif
+
+    if visualmode() ==# 'v'
+        execute "normal! \<C-v>"
+    endif
+
+    if s:MoveHorizontally("'<", "'>", a:distance)
+        execute "normal! g`[\<C-v>g`]"
+    endif
 
 endfunction
 

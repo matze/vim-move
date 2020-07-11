@@ -36,14 +36,17 @@ function s:MoveVertically(first, last, distance)
         return
     endif
 
+    let l:first = line(a:first)
+    let l:last  = line(a:last)
+
     " To avoid 'Invalid range' errors we must ensure that the destination
     " line is valid and that we don't try to move a range into itself.
     if a:distance <= 0
-        let l:after = max([1,         a:first + a:distance]) - 1
+        let l:after = max([1,         l:first + a:distance]) - 1
     else
-        let l:after = min([line('$'), a:last  + a:distance])
+        let l:after = min([line('$'), l:last  + a:distance])
     endif
-    execute a:first ',' a:last 'move ' l:after
+    execute l:first ',' l:last 'move ' l:after
 
     " After a :move the '[ and '] marks point to first and last moved line
     " and the cursor is placed at the last line.
@@ -63,7 +66,7 @@ function s:MoveLineVertically(distance)
     normal! ^
     let l:old_indent = virtcol('.')
 
-    call s:MoveVertically(line('.'), line('.'), a:distance)
+    call s:MoveVertically('.', '.', a:distance)
 
     normal! ^
     let l:new_indent = virtcol('.')
@@ -77,7 +80,7 @@ endfunction
 "
 function s:MoveBlockVertically(distance)
 
-    call s:MoveVertically(line("'<"), line("'>"), a:distance)
+    call s:MoveVertically("'<", "'>", a:distance)
     normal! gv
 
 endfunction

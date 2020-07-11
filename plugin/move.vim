@@ -145,22 +145,13 @@ function s:MoveCharHorizontally(distance)
 endfunction
 
 "
-" If in blockwise visual mode, move the selected rectangular area.
-" If in characterwise visual mode do the same, after switching to blockwise.
-" If in linewise visual mode, do nothing.
+" In visual mode, switch to blockwise mode then move the selected rectangular
+" area horizontally. Maintains the selection although the cursor may be moved
+" to the bottom right corner if it wasn't already there.
 "
 function s:MoveBlockHorizontally(distance)
 
-    normal! gv
-
-    if visualmode() ==# 'V'
-        echoerr 'vim-move: Cannot move horizontally in linewise visual mode'
-        return
-    endif
-
-    if visualmode() ==# 'v'
-        execute "normal! \<C-v>"
-    endif
+    execute "normal! g`<\<C-v>g`>"
 
     if s:MoveHorizontally("'<", "'>", a:distance)
         execute "normal! g`[\<C-v>g`]"

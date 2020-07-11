@@ -62,16 +62,15 @@ endfunction
 "
 function s:MoveLineVertically(distance)
 
-    let l:old_col    = virtcol('.')
+    let l:old_col    = col('.')
     normal! ^
-    let l:old_indent = virtcol('.')
+    let l:old_indent = col('.')
 
     call s:MoveVertically('.', '.', a:distance)
 
     normal! ^
-    let l:new_indent = virtcol('.')
-    let l:new_col    = max([1, l:old_col - l:old_indent + l:new_indent])
-    execute 'normal!'  (l:new_col . '|')
+    let l:new_indent = col('.')
+    call cursor(line('.'), max([1, l:old_col - l:old_indent + l:new_indent]))
 endfunction
 
 "
@@ -97,7 +96,7 @@ function s:MoveHorizontally(corner1, corner2, distance)
         return 0
     endif
 
-    let l:cols = [virtcol(a:corner1), virtcol(a:corner2)]
+    let l:cols = [col(a:corner1), col(a:corner2)]
     let l:first = min(l:cols)
     let l:last  = max(l:cols)
     let l:width = l:last - l:first + 1
@@ -121,7 +120,7 @@ function s:MoveHorizontally(corner1, corner2, distance)
     normal! x
 
     let l:old_virtualedit = &virtualedit
-    if l:before >= virtcol('$')
+    if l:before >= col('$')
         let &virtualedit = 'all'
     else
         " Because of a Vim <= 8.2 bug, we must disable virtualedit in this case.
@@ -129,7 +128,7 @@ function s:MoveHorizontally(corner1, corner2, distance)
         let &virtualedit = ''
     endif
 
-    execute 'normal!' . (l:before.'|')
+    call cursor(line('.'), l:before)
     normal! P
 
     let &virtualedit = l:old_virtualedit

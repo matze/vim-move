@@ -53,7 +53,6 @@ function s:MoveVertically(first, last, distance)
     if g:move_auto_indent
         normal! g'[=g']
     endif
-
 endfunction
 
 "
@@ -61,7 +60,6 @@ endfunction
 " The cursor stays pointing at the same character as before.
 "
 function s:MoveLineVertically(distance)
-
     let l:old_col    = col('.')
     normal! ^
     let l:old_indent = col('.')
@@ -78,10 +76,8 @@ endfunction
 " Maintains the current selection, albeit not exactly if auto_indent is on.
 "
 function s:MoveBlockVertically(distance)
-
     call s:MoveVertically("'<", "'>", a:distance)
     normal! gv
-
 endfunction
 
 
@@ -141,9 +137,7 @@ endfunction
 " In normal mode, move the character under the cursor horizontally
 "
 function s:MoveCharHorizontally(distance)
-
     call s:MoveHorizontally('.', '.', a:distance)
-
 endfunction
 
 "
@@ -152,13 +146,10 @@ endfunction
 " to the bottom right corner if it wasn't already there.
 "
 function s:MoveBlockHorizontally(distance)
-
     execute "normal! g`<\<C-v>g`>"
-
     if s:MoveHorizontally("'<", "'>", a:distance)
         execute "normal! g`[\<C-v>g`]"
     endif
-
 endfunction
 
 

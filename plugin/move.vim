@@ -31,44 +31,44 @@ endif
 " Goes down if (distance > 0) and up if (distance < 0).
 " Places the cursor at last moved line.
 "
-function! s:MoveVertically(first, last, distance)
+function s:MoveVertically(first, last, distance)
     if !&modifiable
         return
     endif
 
+    let l:first = line(a:first)
+    let l:last  = line(a:last)
+
     " To avoid 'Invalid range' errors we must ensure that the destination
     " line is valid and that we don't try to move a range into itself.
     if a:distance <= 0
-        let l:after = max([1,         a:first + a:distance]) - 1
+        let l:after = max([1,         l:first + a:distance]) - 1
     else
-        let l:after = min([line('$'), a:last  + a:distance])
+        let l:after = min([line('$'), l:last  + a:distance])
     endif
-    execute a:first ',' a:last 'move ' l:after
+    execute l:first ',' l:last 'move ' l:after
 
     " After a :move the '[ and '] marks point to first and last moved line
     " and the cursor is placed at the last line.
     if g:move_auto_indent
         normal! g'[=g']
     endif
-
 endfunction
 
 "
 " In normal mode, move the current line vertically.
 " The cursor stays pointing at the same character as before.
 "
-function! s:MoveLineVertically(distance)
-
-    let l:old_col    = virtcol('.')
+function s:MoveLineVertically(distance)
+    let l:old_col    = col('.')
     normal! ^
-    let l:old_indent = virtcol('.')
+    let l:old_indent = col('.')
 
-    call s:MoveVertically(line('.'), line('.'), a:distance)
+    call s:MoveVertically('.', '.', a:distance)
 
     normal! ^
-    let l:new_indent = virtcol('.')
-    let l:new_col    = max([1, l:old_col - l:old_indent + l:new_indent])
-    execute 'normal!'  (l:new_col . '|')
+    let l:new_indent = col('.')
+    call cursor(line('.'), max([1, l:old_col - l:old_indent + l:new_indent]))
 endfunction
 
 "
@@ -76,74 +76,31 @@ endfunction
 " Maintains the current selection, albeit not exactly if auto_indent is on.
 "
 function s:MoveBlockVertically(distance)
-
-    call s:MoveVertically(line("'<"), line("'>"), a:distance)
+    call s:MoveVertically("'<", "'>", a:distance)
     normal! gv
-
 endfunction
 
+
 "
-" In normal mode, move the character under the cursor horizontally
-" Moves right (distance > 0) and left if (distance < 0).
+" If in normal mode, moves the character under the cursor.
+" If in blockwise visual mode, moves the selected rectangular area.
+" Goes right if (distance > 0) and left if (distance < 0).
+" Returns whether an edit was made.
 "
-function! s:MoveCharHorizontally(distance)
+function s:MoveHorizontally(corner_start, corner_end, distance)
     if !&modifiable
-        return
+        return 0
     endif
 
-    let l:curr = virtcol('.')
-    let l:before = l:curr + a:distance
-    if !g:move_past_end_of_line
-        let l:before = max([1, min([l:before, virtcol('$')-1])])
-    endif
-
-    if l:curr == l:before
-        " Don't add an empty change to the undo stack.
-        return
-    endif
-
-    let l:old_default_register = @"
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
-
-    normal! x
-    execute 'normal!' . (l:before.'|')
-    normal! P
-
-    let &virtualedit = l:old_virtualedit
-    let @" = l:old_default_register
-
-endfunction
-
-"
-" In visual mode, move the selected block to the left
-" Moves right (distance > 0) and left if (distance < 0).
-" Switches to visual-block mode first if another visual mode is selected.
-"
-function! s:MoveBlockHorizontally(distance)
-    if !&modifiable
-        return
-    endif
-
-    if visualmode() ==# 'V'
-        echomsg 'vim-move: Cannot move horizontally in linewise visual mode'
-        return
-    endif
-
-    normal! gv
-
-    if visualmode() ==# 'v'
-        echomsg 'vim-move: Switching to visual block mode'
-        execute "normal! \<C-v>"
-    endif
-
-    let l:cols = [virtcol("'<"), virtcol("'>")]
+    let l:cols = [col(a:corner_start), col(a:corner_end)]
     let l:first = min(l:cols)
     let l:last  = max(l:cols)
     let l:width = l:last - l:first + 1
 
     let l:before = max([1, l:first + a:distance])
     if a:distance > 0 && !g:move_past_end_of_line
-        let l:shortest = min(map(getline("'<", "'>"), 'strwidth(v:val)'))
+        let l:lines = getline(a:corner_start, a:corner_end)
+        let l:shortest = min(map(l:lines, 'strwidth(v:val)'))
         if l:last < l:shortest
             let l:before = min([l:before, l:shortest - l:width + 1])
         else
@@ -152,34 +109,56 @@ function! s:MoveBlockHorizontally(distance)
     endif
 
     if l:first == l:before
-        " Don't add an empty change to the undo stack.
-        return
+        " Don't add an empty change to the undo stack
+        return 0
     endif
 
-    let [l:old_virtualedit, &virtualedit] = [&virtualedit, 'all']
     let l:old_default_register = @"
+    normal! x
 
-    normal! d
-    execute 'normal!' . (l:before.'|')
+    let l:old_virtualedit = &virtualedit
+    if l:before >= col('$')
+        let &virtualedit = 'all'
+    else
+        " Because of a Vim <= 8.2 bug, we must disable virtualedit in this case.
+        " See https://github.com/vim/vim/pull/6430
+        let &virtualedit = ''
+    endif
+
+    call cursor(line('.'), l:before)
     normal! P
 
-    let @" = l:old_default_register
     let &virtualedit = l:old_virtualedit
+    let @" = l:old_default_register
 
-    " Reselect the pasted text.
-    " For some reason, `[ doesn't always point where it should -- sometimes it
-    " is off by one. Maybe it is because of the virtualedit=all? The
-    " workaround we found is to recompute the destination column by hand.
-    execute 'normal!' . (l:before.'|') . "\<C-v>`]"
+    return 1
+endfunction
 
+"
+" In normal mode, move the character under the cursor horizontally
+"
+function s:MoveCharHorizontally(distance)
+    call s:MoveHorizontally('.', '.', a:distance)
+endfunction
+
+"
+" In visual mode, switch to blockwise mode then move the selected rectangular
+" area horizontally. Maintains the selection although the cursor may be moved
+" to the bottom right corner if it wasn't already there.
+"
+function s:MoveBlockHorizontally(distance)
+    execute "normal! g`<\<C-v>g`>"
+    if s:MoveHorizontally("'<", "'>", a:distance)
+        execute "normal! g`[\<C-v>g`]"
+    endif
 endfunction
 
 
-function! s:HalfPageSize()
+function s:HalfPageSize()
     return winheight('.') / 2
 endfunction
 
-function! s:MoveKey(key)
+function s:MoveKey(key)
     return '<' . g:move_key_modifier . '-' . a:key . '>'
 endfunction
 

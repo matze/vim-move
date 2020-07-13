@@ -87,19 +87,20 @@ endfunction
 " Goes right if (distance > 0) and left if (distance < 0).
 " Returns whether an edit was made.
 "
-function s:MoveHorizontally(corner1, corner2, distance)
+function s:MoveHorizontally(corner_start, corner_end, distance)
     if !&modifiable
         return 0
     endif
 
-    let l:cols = [col(a:corner1), col(a:corner2)]
+    let l:cols = [col(a:corner_start), col(a:corner_end)]
     let l:first = min(l:cols)
     let l:last  = max(l:cols)
     let l:width = l:last - l:first + 1
 
     let l:before = max([1, l:first + a:distance])
     if a:distance > 0 && !g:move_past_end_of_line
-        let l:shortest = min(map(getline(a:corner1, a:corner2), 'strwidth(v:val)'))
+        let l:lines = getline(a:corner_start, a:corner_end)
+        let l:shortest = min(map(l:lines, 'strwidth(v:val)'))
         if l:last < l:shortest
             let l:before = min([l:before, l:shortest - l:width + 1])
         else

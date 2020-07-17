@@ -32,7 +32,7 @@ endif
 " Places the cursor at last moved line.
 "
 function s:MoveVertically(first, last, distance)
-    if !&modifiable
+    if !&modifiable || a:distance == 0
         return
     endif
 
@@ -88,7 +88,7 @@ endfunction
 " Returns whether an edit was made.
 "
 function s:MoveHorizontally(corner_start, corner_end, distance)
-    if !&modifiable
+    if !&modifiable || a:distance == 0
         return 0
     endif
 

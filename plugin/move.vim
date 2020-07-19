@@ -32,24 +32,30 @@ endif
 " Places the cursor at last moved line.
 "
 function s:MoveVertically(first, last, distance)
-    if !&modifiable
+    if !&modifiable || a:distance == 0
         return
     endif
 
     let l:first = line(a:first)
     let l:last  = line(a:last)
 
-    " To avoid 'Invalid range' errors we must ensure that the destination
-    " line is valid and that we don't try to move a range into itself.
-    if a:distance <= 0
-        let l:after = max([1,         l:first + a:distance]) - 1
+    " Compute the destination line, skiping over folds.
+    " To avoid 'Invalid range' errors we must ensure that the destination line
+    " is valid and that we don't try to move a range into itself. 
+    if a:distance < 0
+        call cursor(l:first, 1)
+        execute 'normal!' (-a:distance).'k'
+        let l:after = line('.') - 1
     else
-        let l:after = min([line('$'), l:last  + a:distance])
+        call cursor(l:last, 1)
+        execute 'normal!' a:distance.'j'
+        let l:after = (foldclosedend('.') == -1 ? line('.') : foldclosedend('.'))
     endif
+
+    " After this :move the '[ and '] marks will point to first and last moved
+    " line and the cursor will be placed at the last line.
     execute l:first ',' l:last 'move ' l:after
 
-    " After a :move the '[ and '] marks point to first and last moved line
-    " and the cursor is placed at the last line.
     if g:move_auto_indent
         normal! g'[=g']
     endif
@@ -88,7 +94,7 @@ endfunction
 " Returns whether an edit was made.
 "
 function s:MoveHorizontally(corner_start, corner_end, distance)
-    if !&modifiable
+    if !&modifiable || a:distance == 0
         return 0
     endif
 

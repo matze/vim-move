@@ -39,9 +39,10 @@ function s:MoveVertically(first, last, distance)
     let l:first = line(a:first)
     let l:last  = line(a:last)
 
-    " Compute the destination line, skiping over folds.
-    " To avoid 'Invalid range' errors we must ensure that the destination line
-    " is valid and that we don't try to move a range into itself. 
+    " Compute the destination line. Instead of simply incrementing the line
+    " number, we move the cursor with `j` and `k`. This ensures that the
+    " destination line is in bounds and it also goes past closed folds.
+    let l:old_pos = getcurpos()
     if a:distance < 0
         call cursor(l:first, 1)
         execute 'normal!' (-a:distance).'k'
@@ -51,6 +52,11 @@ function s:MoveVertically(first, last, distance)
         execute 'normal!' a:distance.'j'
         let l:after = (foldclosedend('.') == -1 ? line('.') : foldclosedend('.'))
     endif
+
+    " Restoring the cursor position might seem redundant because of the
+    " upcoming :move. However, it prevents a weird issue where undoing a move
+    " across a folded section causes it to unfold.
+    call setpos('.', l:old_pos)
 
     " After this :move the '[ and '] marks will point to first and last moved
     " line and the cursor will be placed at the last line.

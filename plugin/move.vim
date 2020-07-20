@@ -57,7 +57,34 @@ function s:MoveVertically(first, last, distance)
     execute l:first ',' l:last 'move ' l:after
 
     if g:move_auto_indent
-        normal! g'[=g']
+        " To preserve the relative indentation between lines we only use '=='
+        " on the first line, to figure out by how much we need to reindent.
+        " This heuristic assumes that the indentation level of the first line
+        " is less than or equal to the indentation level of the other lines.
+        " I don't think there is an easy way to reindent if that is not true.
+        let l:first = line("'[")
+        let l:last  = line("']")
+
+        call cursor(l:first, 1)
+        normal! ^
+        let l:old_indent = virtcol('.')
+        normal! ==
+        let l:new_indent = virtcol('.')
+
+        if l:first < l:last && l:old_indent != l:new_indent
+            let l:op = (l:old_indent < l:new_indent
+                        \  ? repeat('>', l:new_indent - l:old_indent)
+                        \  : repeat('<', l:old_indent - l:new_indent))
+            let l:old_sw = &shiftwidth
+            let &shiftwidth = 1
+            execute l:first+1 ',' l:last l:op
+            let &shiftwidth = l:old_sw
+        endif
+
+        call cursor(l:first, 1)
+        normal! 0m[
+        call cursor(l:last, 1)
+        normal! $m]
     endif
 endfunction
 

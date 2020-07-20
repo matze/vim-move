@@ -54,7 +54,7 @@ function s:MoveVertically(first, last, distance)
 
     " After this :move the '[ and '] marks will point to first and last moved
     " line and the cursor will be placed at the last line.
-    execute l:first ',' l:last 'move ' l:after
+    execute l:first ',' l:last 'move' l:after
 
     if g:move_auto_indent
         " To preserve the relative indentation between lines we only use '=='

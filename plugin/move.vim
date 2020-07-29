@@ -208,19 +208,19 @@ endfunction
 " also return the wrong results. Because of this, we have switched everything
 " to using <C-u>.
 
-vnoremap <silent> <Plug>MoveBlockDown           :<C-u> call <SID>MoveBlockVertically( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :<C-u> call <SID>MoveBlockVertically(-v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageDown   :<C-u> call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
-vnoremap <silent> <Plug>MoveBlockHalfPageUp     :<C-u> call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
-vnoremap <silent> <Plug>MoveBlockRight          :<C-u> call <SID>MoveBlockHorizontally( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockLeft           :<C-u> call <SID>MoveBlockHorizontally(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockDown           :<C-u> silent call <SID>MoveBlockVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockUp             :<C-u> silent call <SID>MoveBlockVertically(-v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageDown   :<C-u> silent call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockHalfPageUp     :<C-u> silent call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
+vnoremap <silent> <Plug>MoveBlockRight          :<C-u> silent call <SID>MoveBlockHorizontally( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockLeft           :<C-u> silent call <SID>MoveBlockHorizontally(-v:count1)<CR>
 
-nnoremap <silent> <Plug>MoveLineDown            :<C-u> call <SID>MoveLineVertically( v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineUp              :<C-u> call <SID>MoveLineVertically(-v:count1)<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> call <SID>MoveLineVertically( v:count1 * <SID>HalfPageSize())<CR>
-nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> call <SID>MoveLineVertically(-v:count1 * <SID>HalfPageSize())<CR>
-nnoremap <silent> <Plug>MoveCharRight           :<C-u> call <SID>MoveCharHorizontally( v:count1)<CR>
-nnoremap <silent> <Plug>MoveCharLeft            :<C-u> call <SID>MoveCharHorizontally(-v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineDown            :<C-u> silent call <SID>MoveLineVertically( v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineUp              :<C-u> silent call <SID>MoveLineVertically(-v:count1)<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageDown    :<C-u> silent call <SID>MoveLineVertically( v:count1 * <SID>HalfPageSize())<CR>
+nnoremap <silent> <Plug>MoveLineHalfPageUp      :<C-u> silent call <SID>MoveLineVertically(-v:count1 * <SID>HalfPageSize())<CR>
+nnoremap <silent> <Plug>MoveCharRight           :<C-u> silent call <SID>MoveCharHorizontally( v:count1)<CR>
+nnoremap <silent> <Plug>MoveCharLeft            :<C-u> silent call <SID>MoveCharHorizontally(-v:count1)<CR>
 
 
 if g:move_map_keys

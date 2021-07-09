@@ -72,19 +72,17 @@ function s:MoveVertically(first, last, distance)
         let l:last  = line("']")
 
         call cursor(l:first, 1)
-        normal! ^
-        let l:old_indent = virtcol('.')
+        let l:old_indent = indent('.')
         normal! ==
-        let l:new_indent = indent('.') + 1
+        let l:new_indent = indent('.')
 
-        let [l:sorted_first, l:sorted_last] = sort([first, last], 'n')
         if l:first < l:last && l:old_indent != l:new_indent
             let l:op = (l:old_indent < l:new_indent
                         \  ? repeat('>', l:new_indent - l:old_indent)
                         \  : repeat('<', l:old_indent - l:new_indent))
             let l:old_sw = &shiftwidth
             let &shiftwidth = 1
-            execute l:sorted_first+1 ',' l:sorted_last l:op
+            execute l:first+1 ',' l:last l:op
             let &shiftwidth = l:old_sw
         endif
 

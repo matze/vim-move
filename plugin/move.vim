@@ -26,6 +26,14 @@ if !exists('g:move_past_end_of_line')
     let g:move_past_end_of_line = 1
 endif
 
+if !exists('g:move_vmap')
+    let g:move_vmap = 1
+endif
+
+if !exists('g:move_nmap')
+    let g:move_nmap = 1
+endif
+
 "
 " Move and possibly reindent the given lines.
 " Goes down if (distance > 0) and up if (distance < 0).
@@ -223,13 +231,17 @@ nnoremap <silent> <Plug>MoveCharLeft            :<C-u> silent call <SID>MoveChar
 
 
 if g:move_map_keys
-    execute 'vmap' s:MoveKey('j') '<Plug>MoveBlockDown'
-    execute 'vmap' s:MoveKey('k') '<Plug>MoveBlockUp'
-    execute 'vmap' s:MoveKey('h') '<Plug>MoveBlockLeft'
-    execute 'vmap' s:MoveKey('l') '<Plug>MoveBlockRight'
+    if g:move_vmap
+        execute 'vmap' s:MoveKey('j') '<Plug>MoveBlockDown'
+        execute 'vmap' s:MoveKey('k') '<Plug>MoveBlockUp'
+        execute 'vmap' s:MoveKey('h') '<Plug>MoveBlockLeft'
+        execute 'vmap' s:MoveKey('l') '<Plug>MoveBlockRight'
+    endif
 
-    execute 'nmap' s:MoveKey('j') '<Plug>MoveLineDown'
-    execute 'nmap' s:MoveKey('k') '<Plug>MoveLineUp'
-    execute 'nmap' s:MoveKey('h') '<Plug>MoveCharLeft'
-    execute 'nmap' s:MoveKey('l') '<Plug>MoveCharRight'
+    if g:move_nmap
+        execute 'nmap' s:MoveKey('j') '<Plug>MoveLineDown'
+        execute 'nmap' s:MoveKey('k') '<Plug>MoveLineUp'
+        execute 'nmap' s:MoveKey('h') '<Plug>MoveCharLeft'
+        execute 'nmap' s:MoveKey('l') '<Plug>MoveCharRight'
+    endif
 endif

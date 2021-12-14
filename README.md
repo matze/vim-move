@@ -15,6 +15,13 @@ normal mode:
 The mappings can be prefixed with a count, e.g. `5<A-k>` will move the selection
 up by 5 lines.
 
+Features:
+
+* vertical motions
+* horizontal motions
+* automatic indentation
+* undo multiple moves with single `:undo`
+
 See this short demo for a first impression:
 
 ![vim-vertical-move demo](http://i.imgur.com/RMv8KsJ.gif)

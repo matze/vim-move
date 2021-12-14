@@ -48,6 +48,16 @@ the line. Can be disabled with >
 
     let g:move_past_end_of_line = 0
 
+By default subsequent move operations in the same direction use |:undojoin| so
+that all of them are undone after hitting |:undo| once. Can be disabled with >
+
+    let g:move_undo_join = 0
+
+It is also possible to uses |:undojoin| for all moves, regardless of motion
+direction with >
+
+    let g:move_undo_join_same_dir_only = 0
+
 -------------------------------------------------------------------------------
 2.1 <Plug>MoveBlockDown
 

@@ -26,6 +26,30 @@ if !exists('g:move_past_end_of_line')
     let g:move_past_end_of_line = 1
 endif
 
+if !exists('g:move_undo_join')
+    let g:move_undo_join = 1
+endif
+
+if !exists('g:move_undo_join_same_dir_only')
+    let g:move_undo_join_same_dir_only = 1
+endif
+
+function s:UndoJoin(dir)
+    " Check changedtick to see if there were no other changes since our last
+    " operation. Dending on settings we may also require the same dir of move.
+    let l:last = get(b:, 'move_last', { 'changedtick': -1, 'dir': v:null })
+    let l:no_changes = l:last.changedtick == b:changedtick
+    let l:dir_ok = g:move_undo_join_same_dir_only == 0 || l:last.dir == a:dir
+    if l:no_changes && l:dir_ok
+        silent! undojoin
+    endif
+endfunction
+
+function s:SaveMoveInfo(dir)
+    " Save changedtick/dir to check it in the next move operation.
+    let b:move_last = { 'changedtick': b:changedtick, 'dir': a:dir }
+endfunction
+
 "
 " Move and possibly reindent the given lines.
 " Goes down if (distance > 0) and up if (distance < 0).
@@ -57,6 +81,10 @@ function s:MoveVertically(first, last, distance)
     " upcoming :move. However, it prevents a weird issue where undoing a move
     " across a folded section causes it to unfold.
     call setpos('.', l:old_pos)
+
+    if g:move_undo_join
+        call s:UndoJoin(a:distance < 0 ? 'up' : 'down')
+    endif
 
     " After this :move the '[ and '] marks will point to first and last moved
     " line and the cursor will be placed at the last line.
@@ -90,6 +118,10 @@ function s:MoveVertically(first, last, distance)
         normal! 0m[
         call cursor(l:last, 1)
         normal! $m]
+    endif
+
+    if g:move_undo_join
+        call s:SaveMoveInfo(a:distance < 0 ? 'up' : 'down')
     endif
 endfunction
 
@@ -151,6 +183,10 @@ function s:MoveHorizontally(corner_start, corner_end, distance)
         return 0
     endif
 
+    if g:move_undo_join
+        call s:UndoJoin(a:distance < 0 ? 'left' : 'right')
+    endif
+
     let l:old_default_register = @"
     normal! x
 
@@ -168,6 +204,10 @@ function s:MoveHorizontally(corner_start, corner_end, distance)
 
     let &virtualedit = l:old_virtualedit
     let @" = l:old_default_register
+
+    if g:move_undo_join
+        call s:SaveMoveInfo(a:distance < 0 ? 'left' : 'right')
+    endif
 
     return 1
 endfunction

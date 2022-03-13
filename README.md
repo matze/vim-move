@@ -42,7 +42,7 @@ to your `.vimrc`.
 
 ## Customization
 
-Use `g:move_key_modifier` to set a custom modifier for key bindings. For
+Use `g:move_key_modifier` to set a custom modifier for key bindings in normal mode. For
 example,
 
 ```vim
@@ -54,7 +54,27 @@ which will create the following key bindings:
     <C-k>   Move current line/selections up
     <C-j>   Move current line/selections down
 
+Use `g:move_key_modifier_visualmode` to set a custom modifier for key bindings in visual mode. For
+example,
+
+```vim
+let g:move_key_modifier = 'S'
+```
+
+which will create the following key bindings:
+
+    <S-k>   Move currently selected block up
+    <S-j>   Move currently selected block down
+
+
 And so on...
+
+
+*NOTE*
+
+Both `g:move_key_modifier` and `g:move_key_modifier_visualmode` default to 'A'
+for backwards compatibility with previous versions of vim-move
+
 
 ## License
 

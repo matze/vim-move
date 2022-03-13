@@ -18,6 +18,11 @@ if !exists('g:move_key_modifier')
     let g:move_key_modifier = 'A'
 endif
 
+if !exists('g:move_key_modifier_visualmode')
+    let g:move_key_modifier_visualmode = 'A'
+endif
+
+
 if !exists('g:move_auto_indent')
     let g:move_auto_indent = 1
 endif
@@ -240,6 +245,10 @@ function s:MoveKey(key)
     return '<' . g:move_key_modifier . '-' . a:key . '>'
 endfunction
 
+function s:VisualMoveKey(key)
+    return '<' . g:move_key_modifier_visualmode . '-' . a:key . '>'
+endfunction
+
 " Note: An older version of this program used callbacks with the "range"
 " attribute to support being called with a selection range as a parameter.
 " However, that had some problems: we would get E16 errors if the user tried
@@ -263,10 +272,10 @@ nnoremap <silent> <Plug>MoveCharLeft            :<C-u> silent call <SID>MoveChar
 
 
 if g:move_map_keys
-    execute 'vmap' s:MoveKey('j') '<Plug>MoveBlockDown'
-    execute 'vmap' s:MoveKey('k') '<Plug>MoveBlockUp'
-    execute 'vmap' s:MoveKey('h') '<Plug>MoveBlockLeft'
-    execute 'vmap' s:MoveKey('l') '<Plug>MoveBlockRight'
+    execute 'vmap' s:VisualMoveKey('j') '<Plug>MoveBlockDown'
+    execute 'vmap' s:VisualMoveKey('k') '<Plug>MoveBlockUp'
+    execute 'vmap' s:VisualMoveKey('h') '<Plug>MoveBlockLeft'
+    execute 'vmap' s:VisualMoveKey('l') '<Plug>MoveBlockRight'
 
     execute 'nmap' s:MoveKey('j') '<Plug>MoveLineDown'
     execute 'nmap' s:MoveKey('k') '<Plug>MoveLineUp'

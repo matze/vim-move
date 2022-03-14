@@ -73,7 +73,7 @@ And so on...
 *NOTE*
 
 Both `g:move_key_modifier` and `g:move_key_modifier_visualmode` default to 'A'
-for backwards compatibility with previous versions of vim-move
+for backwards compatibility with previous versions of vim-move.
 
 
 ## License

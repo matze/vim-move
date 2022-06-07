@@ -58,7 +58,7 @@ Use `g:move_key_modifier_visualmode` to set a custom modifier for key bindings i
 example,
 
 ```vim
-let g:move_key_modifier = 'S'
+let g:move_key_modifier_visualmode = 'S'
 ```
 
 which will create the following key bindings:

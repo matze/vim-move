@@ -241,11 +241,21 @@ function s:HalfPageSize()
     return winheight('.') / 2
 endfunction
 
+" Equivalent keys for <A-KEY> on macOS (see issue #49)
+let s:mac_map_keys = {'k': '˚', 'j': '∆', 'h': '˙', 'l': '¬'}
+
 function s:MoveKey(key)
+    " If on macOS, use the equivalent key for <A-KEY>
+    if has('macunix') && g:move_key_modifier_visualmode == 'A'
+        return s:mac_map_keys[a:key]
+    endif
     return '<' . g:move_key_modifier . '-' . a:key . '>'
 endfunction
 
 function s:VisualMoveKey(key)
+    if has('macunix') && g:move_key_modifier_visualmode == 'A'
+        return s:mac_map_keys[a:key]
+    endif
     return '<' . g:move_key_modifier_visualmode . '-' . a:key . '>'
 endfunction
 

@@ -75,6 +75,9 @@ And so on...
 Both `g:move_key_modifier` and `g:move_key_modifier_visualmode` default to 'A'
 for backwards compatibility with previous versions of vim-move.
 
+If the default mappings do not work, see the `move_normal_option` option in the
+help doc.
+
 
 ## License
 

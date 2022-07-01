@@ -58,6 +58,10 @@ direction with >
 
     let g:move_undo_join_same_dir_only = 0
 
+If default bindings are not working with vim-move, try setting >
+
+    let g:move_normal_option = 1
+
 -------------------------------------------------------------------------------
 2.1 <Plug>MoveBlockDown
 

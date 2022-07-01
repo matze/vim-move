@@ -22,6 +22,10 @@ if !exists('g:move_key_modifier_visualmode')
     let g:move_key_modifier_visualmode = 'A'
 endif
 
+" Only remap option keys if the user specifies (see pull request #71)
+if !exists('g:move_normal_option')
+    let g:move_normal_option = 0
+endif
 
 if !exists('g:move_auto_indent')
     let g:move_auto_indent = 1
@@ -246,14 +250,14 @@ let s:mac_map_keys = {'k': '˚', 'j': '∆', 'h': '˙', 'l': '¬'}
 
 function s:MoveKey(key)
     " If on macOS, use the equivalent key for <A-KEY>
-    if has('macunix') && g:move_key_modifier_visualmode == 'A'
+    if g:move_normal_option && g:move_key_modifier_visualmode ==? 'A'
         return s:mac_map_keys[a:key]
     endif
     return '<' . g:move_key_modifier . '-' . a:key . '>'
 endfunction
 
 function s:VisualMoveKey(key)
-    if has('macunix') && g:move_key_modifier_visualmode == 'A'
+    if g:move_normal_option && g:move_key_modifier_visualmode ==? 'A'
         return s:mac_map_keys[a:key]
     endif
     return '<' . g:move_key_modifier_visualmode . '-' . a:key . '>'

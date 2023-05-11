@@ -39,6 +39,14 @@ Bundle 'matze/vim-move'
 
 to your `.vimrc`.
 
+To install it using vim-plug, add
+
+```vim
+Plugin 'matze/vim-move'
+```
+
+to your `.vimrc`.
+
 
 ## Customization
 

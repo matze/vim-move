@@ -197,7 +197,7 @@ function s:MoveHorizontally(corner_start, corner_end, distance)
     endif
 
     let l:old_default_register = @"
-    normal! x
+    normal! ""x
 
     let l:old_virtualedit = &virtualedit
     if l:before >= col('$')
@@ -209,7 +209,7 @@ function s:MoveHorizontally(corner_start, corner_end, distance)
     endif
 
     call cursor(line('.'), l:before)
-    normal! P
+    normal! ""P
 
     let &virtualedit = l:old_virtualedit
     let @" = l:old_default_register

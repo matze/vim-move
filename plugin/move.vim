@@ -297,13 +297,16 @@ if g:move_map_keys
     execute 'nmap' s:MoveKey('h') '<Plug>MoveCharLeft'
     execute 'nmap' s:MoveKey('l') '<Plug>MoveCharRight'
 
-    vmap <Down>  <Plug>MoveBlockDown
-    vmap <Up>    <Plug>MoveBlockUp
-    vmap <Left>  <Plug>MoveBlockLeft
-    vmap <Right> <Plug>MoveBlockRight
+    execute 'vmap' s:VisualMoveKey('Down') '<Plug>MoveBlockDown'
+    execute 'vmap' s:VisualMoveKey('Up') '<Plug>MoveBlockUp'
+    execute 'vmap' s:VisualMoveKey('Left') '<Plug>MoveBlockLeft'
+    execute 'vmap' s:VisualMoveKey('Right') '<Plug>MoveBlockRight'
 
-    nmap <Down>  <Plug>MoveLineDown
-    nmap <Up>    <Plug>MoveLineUp
-    nmap <Left>  <Plug>MoveCharLeft
-    nmap <Right> <Plug>MoveCharRight
+    execute 'nmap' s:MoveKey('Down') '<Plug>MoveLineDown'
+    execute 'nmap' s:MoveKey('Up') '<Plug>MoveLineUp'
+    execute 'nmap' s:MoveKey('Left') '<Plug>MoveCharLeft'
+    execute 'nmap' s:MoveKey('Right') '<Plug>MoveCharRight'
+
+
+
 endif

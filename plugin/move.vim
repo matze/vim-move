@@ -43,6 +43,10 @@ if !exists('g:move_undo_join_same_dir_only')
     let g:move_undo_join_same_dir_only = 1
 endif
 
+if !exists('g:move_block_relative_lines')
+    let g:move_block_relative_lines = 0
+endif
+
 function s:UndoJoin(dir)
     " Check changedtick to see if there were no other changes since our last
     " operation. Dending on settings we may also require the same dir of move.
@@ -270,8 +274,30 @@ endfunction
 " also return the wrong results. Because of this, we have switched everything
 " to using <C-u>.
 
-vnoremap <silent> <Plug>MoveBlockDown           :<C-u> silent call <SID>MoveBlockVertically( v:count1)<CR>
-vnoremap <silent> <Plug>MoveBlockUp             :<C-u> silent call <SID>MoveBlockVertically(-v:count1)<CR>
+" Default behavior: MoveBlockCountLines
+vnoremap <silent> <Plug>MoveBlockCountLinesDown :<C-u> silent call <SID>MoveBlockVertically( v:count1)<CR>
+vnoremap <silent> <Plug>MoveBlockCountLinesUp   :<C-u> silent call <SID>MoveBlockVertically(-v:count1)<CR>
+"
+" Mantain compatibility with previous <Plug>names
+vmap <Plug>MoveBlockDown <Plug>MoveBlockCountLinesDown
+vmap <Plug>MoveBlockUp   <Plug>MoveBlockCountLinesUp
+
+" Opt-in behavior: MoveBlockRelativeLines
+function! s:RelativeLinesDistance(movement_unit, cursor_adjustment)
+    if v:count == 0
+        return a:movement_unit
+    elseif v:count <= a:cursor_adjustment
+        return 0
+    else
+        return a:movement_unit * (v:count - a:cursor_adjustment)
+    end
+endfunction
+" line("'<") and line("'>") can only be correctly obtained during command
+" execution, after <expr> evaluation. for line('.'), it's the opposite: it can
+" only be correctly obtained during <expr> evaluation, before command execution.
+vnoremap <silent> <expr> <Plug>MoveBlockRelativeLinesDown ':<C-u> silent call <SID>MoveBlockVertically(<SID>RelativeLinesDistance( 1, line("''>") - ' .. line('.') .. '))<CR>'
+vnoremap <silent> <expr> <Plug>MoveBlockRelativeLinesUp   ':<C-u> silent call <SID>MoveBlockVertically(<SID>RelativeLinesDistance(-1, ' .. line('.') .. ' - line("''<")))<CR>'
+
 vnoremap <silent> <Plug>MoveBlockHalfPageDown   :<C-u> silent call <SID>MoveBlockVertically( v:count1 * <SID>HalfPageSize())<CR>
 vnoremap <silent> <Plug>MoveBlockHalfPageUp     :<C-u> silent call <SID>MoveBlockVertically(-v:count1 * <SID>HalfPageSize())<CR>
 vnoremap <silent> <Plug>MoveBlockRight          :<C-u> silent call <SID>MoveBlockHorizontally( v:count1)<CR>
@@ -286,8 +312,13 @@ nnoremap <silent> <Plug>MoveCharLeft            :<C-u> silent call <SID>MoveChar
 
 
 if g:move_map_keys
-    execute 'vmap' s:VisualMoveKey('j') '<Plug>MoveBlockDown'
-    execute 'vmap' s:VisualMoveKey('k') '<Plug>MoveBlockUp'
+    if g:move_block_relative_lines
+        execute 'vmap' s:VisualMoveKey('j') '<Plug>MoveBlockRelativeLinesDown'
+        execute 'vmap' s:VisualMoveKey('k') '<Plug>MoveBlockRelativeLinesUp'
+    else
+        execute 'vmap' s:VisualMoveKey('j') '<Plug>MoveBlockCountLinesDown'
+        execute 'vmap' s:VisualMoveKey('k') '<Plug>MoveBlockCountLinesUp'
+    endif
     execute 'vmap' s:VisualMoveKey('h') '<Plug>MoveBlockLeft'
     execute 'vmap' s:VisualMoveKey('l') '<Plug>MoveBlockRight'
 

@@ -58,89 +58,122 @@ direction with >
 
     let g:move_undo_join_same_dir_only = 0
 
+Move block vertically can work in two different ways:
+- Default: MoveBlockCountLines. It moves a block count lines above or below.
+  Default count is 1. Examples:
+  - Vjj<A-k>  selects current line and next two and moves block 1 line above.
+  - Vjj4<A-k> selects current line and next two and moves block 4 lines above.
+              Top of block will reach 6 lines above cursor position.
+- Opt-in: MoveBlockRelativeLines. If count is absent, it moves one line up or
+  down (same as default mode). If count is present, it determines the
+  destination line for moving block, considering relative line numbers. That
+  line number must be outside the block, or else nothing will happen.
+  Examples:
+  - Vjj<A-k>  selects current line and next two and moves block 1 line above.
+  - Vjj4<A-k> selects current line and next two and moves block so that its top
+              reaches 4 lines above the cursor. The distance will be 2 lines up.
+  - Vjj2<A-k> selects current line and next two. 2 lines above is still inside
+              selected block, so nothing will happen.
+
+To enable behavior MoveBlockRelativeLines, add setting >
+
+    let g:move_block_relative_lines = 1
+
 If default bindings are not working with vim-move, try setting >
 
     let g:move_normal_option = 1
 
 -------------------------------------------------------------------------------
-2.1 <Plug>MoveBlockDown
+2.1 <Plug>MoveBlockCountLinesDown
 
 Move selected block down by one line.
 
-Default: vmap <A-j> <Plug>MoveBlockDown
+Default: vmap <A-j> <Plug>MoveBlockCountLinesDown
 
 -------------------------------------------------------------------------------
-2.2 <Plug>MoveBlockUp
+2.2 <Plug>MoveBlockCountLinesUp
 
 Move selected block up by one line.
 
-Default: vmap <A-k> <Plug>MoveBlockUp
+Default: vmap <A-k> <Plug>MoveBlockCountLinesUp
 
 -------------------------------------------------------------------------------
-2.3 <Plug>MoveBlockLeft
+2.3 <Plug>MoveBlockRelativeLinesDown
+
+Move selected block until it reaches line "count" below current line, or, if no
+count is supplied, down by one line.
+
+-------------------------------------------------------------------------------
+2.4 <Plug>MoveBlockRelativeLinesUp
+
+Move selected block until it reaches line "count" above current line, or, if no
+count is supplied, up by one line.
+
+-------------------------------------------------------------------------------
+2.5 <Plug>MoveBlockLeft
 
 Move selected block left by one column.
 
 Default: vmap <A-h> <Plug>MoveBlockLeft
 
 -------------------------------------------------------------------------------
-2.4 <Plug>MoveBlockRight
+2.6 <Plug>MoveBlockRight
 
 Move selected block right by one column.
 
 Default: vmap <A-l> <Plug>MoveBlockRight
 
 -------------------------------------------------------------------------------
-2.5 <Plug>MoveLineDown
+2.7 <Plug>MoveLineDown
 
 Move current line down by one.
 
 Default: nmap <A-j> <Plug>MoveLineDown
 
 -------------------------------------------------------------------------------
-2.6 <Plug>MoveLineUp
+2.8 <Plug>MoveLineUp
 
 Move current line up by one.
 
 Default: nmap <A-k> <Plug>MoveLineUp
 
 -------------------------------------------------------------------------------
-2.7 <Plug>MoveCharLeft
+2.9 <Plug>MoveCharLeft
 
 Move current line left by one.
 
 Default: nmap <A-h> <Plug>MoveCharLeft
 
 -------------------------------------------------------------------------------
-2.8 <Plug>MoveCharRight
+2.10 <Plug>MoveCharRight
 
 Move current line right by one.
 
 Default: nmap <A-l> <Plug>MoveCharRight
 
 -------------------------------------------------------------------------------
-2.9 <Plug>MoveBlockHalfPageDown
+2.11 <Plug>MoveBlockHalfPageDown
 
 Move selected block down by half a page size.
 
 Default: not mapped
 
 -------------------------------------------------------------------------------
-2.10 <Plug>MoveBlockHalfPageUp
+2.12 <Plug>MoveBlockHalfPageUp
 
 Move selected block up by half a page size.
 
 Default: not mapped
 
 -------------------------------------------------------------------------------
-2.11 <Plug>MoveLineHalfPageDown
+2.13 <Plug>MoveLineHalfPageDown
 
 Move current line down by half a page size.
 
 Default: not mapped
 
 -------------------------------------------------------------------------------
-2.12 <Plug>MoveLineHalfPageUp
+2.14 <Plug>MoveLineHalfPageUp
 
 Move current line up by half a page size.
 
